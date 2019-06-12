@@ -142,6 +142,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="leptjson.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="c++11test.cpp" />
+    <ClCompile Include="leptjson.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
