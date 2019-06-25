@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include "leptjson.h"
+#include "leptjson.hpp"
 #include <iostream>
 using namespace lept;
 static int main_ret = 0;

@@ -1,7 +1,7 @@
 /*		leptjson.cpp		*/
 //==========================================================================================================
 //tutorial01
-#include "leptjson.h"
+#include "leptjson.hpp"
 #include <assert.h>	/* assert() */
 #include <stdlib.h>	/* nullptr strtod() */
 //tutorial02

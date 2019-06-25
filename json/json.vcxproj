@@ -142,7 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="leptjson.h" />
+    <ClInclude Include="leptjson.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="c++11test.cpp" />
