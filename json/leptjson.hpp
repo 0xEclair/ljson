@@ -23,7 +23,7 @@ namespace lept {
 	//=== class
 	//=== lept_value 
 	class lept_value {
-		union{
+		union {
 			struct
 			{
 				char* s_;
@@ -33,12 +33,17 @@ namespace lept {
 			double n_;
 		};
 		lept_type type_;
+
+		//=====================================
+		//tutorial03
+		void lept_set_string(const char*s, size_t len);
+		void lept_free();
 	public:
+
 		//=====================================
 		//=====================================
 		int lept_parse(const char*json);
 		lept_type lept_get_type();
-
 
 		//=====================================
 		//=====================================
@@ -74,13 +79,4 @@ namespace lept {
 		// 解析第二部分的空白
 		int lept_parse_whitespace_second();
 	};
-
-
-int lept_parse_literal(lept_context* c, lept_value* v, const char* literal,lept_type&& type);
-
-int lept_parse_number(lept_context* c, lept_value* v);
-
-int lept_parse_value(lept_context* c, lept_value* v);
 }
-
-
