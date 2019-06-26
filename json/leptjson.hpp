@@ -1,5 +1,14 @@
 #pragma once
 /*		leptjson.hpp		*/
+//==========================================================================================================
+//tutorial01
+#include <assert.h>	/* assert() */
+#include <stdlib.h>	/* nullptr strtod() */
+//tutorial02
+#include <errno.h>   /* errno, ERANGE */
+#include <math.h>    /* HUGE_VAL */
+//tutorial03
+#include <string>	/*   memcpy     */
 
 namespace lept {
 	enum lept_type {
@@ -36,7 +45,6 @@ namespace lept {
 
 		//=====================================
 		//tutorial03
-		void lept_set_string(const char*s, size_t len);
 		void lept_free();
 	public:
 
@@ -48,7 +56,32 @@ namespace lept {
 		//=====================================
 		//=====================================
 		//tutorial02
+		#if 0
 		double lept_get_number();
+		#endif
+		//=====================================
+		//=====================================
+		//tutorial03
+		int lept_get_boolean();
+		template <int>
+		void lept_set_boolean(int&& b);
+
+		double lept_get_number();
+		template <double>
+		void lept_set_number(double&& n);
+
+		const char* lept_get_string() {
+			assert(this != nullptr && type_ == LEPT_STRING);
+			return s_;
+		}
+		size_t lept_get_string_length() {
+			assert(this != nullptr && type_ == LEPT_STRING);
+			return len_;
+		}
+		void lept_set_string(const char*s, size_t len);
+		//=====================================
+		//=====================================
+		//修改/获得private变量接口
 		// 设置type_
 		template <typename T>
 		void set_type( T&& t) {
