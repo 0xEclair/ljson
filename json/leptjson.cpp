@@ -7,6 +7,8 @@
 //tutorial02
 #include <errno.h>   /* errno, ERANGE */
 #include <math.h>    /* HUGE_VAL */
+//tutorial03
+#include <memory>	/*   memcpy     */
 using namespace lept;
 
 #define EXPECT(c,ch) \
@@ -14,6 +16,11 @@ using namespace lept;
 			assert(*c->json_ == ch);\
 			c->json_++;\
 		} while (0)
+
+#define lept_init() \
+	do{\
+		set_type(LEPT_NULL);\
+	}while(0)
 
 #define ISDIGIT(ch) ((ch)>='0' && (ch)<='9')
 #define ISDIGIT1TO9(ch) ((ch)>='1' && (ch)<='9')
@@ -158,6 +165,8 @@ namespace {
 		}
 	}
 
+
+
 }
 //=====================================================
 // lept_context
@@ -212,4 +221,25 @@ lept_type lept_value::lept_get_type() {
 double lept::lept_value::lept_get_number(){
 	assert(this != nullptr && type_ == LEPT_NUMBER);
 	return n_;
+}
+
+//=======================================
+//tutorial03
+void lept_value::lept_set_string(const char* s, size_t len) {
+	assert(this != nullptr && (s != nullptr || len == 0));
+	lept_free();
+	s_ = new char[len + 1];
+	memcpy(s_, s, len);
+	s_[len] = '\0';
+	len_ = len;
+	set_type(LEPT_STRING);
+
+}
+
+void lept_value::lept_free() {
+	assert(this != nullptr);
+	if (type_ == LEPT_STRING) {
+		delete[] s_;
+	}
+	type_ = LEPT_NULL;
 }
