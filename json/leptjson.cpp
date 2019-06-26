@@ -237,7 +237,6 @@ void lept_value::lept_set_string(const char* s, size_t len) {
 	s_[len] = '\0';
 	len_ = len;
 	set_type(LEPT_STRING);
-
 }
 
 void lept_value::lept_free() {

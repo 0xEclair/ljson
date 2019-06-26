@@ -67,7 +67,6 @@ namespace lept {
 		void lept_set_boolean(int&& b);
 
 		double lept_get_number();
-		template <double>
 		void lept_set_number(double&& n);
 
 		const char* lept_get_string() {
