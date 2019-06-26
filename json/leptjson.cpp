@@ -1,33 +1,29 @@
 /*		leptjson.cpp		*/
+//==========================================================================================================
+//tutorial01
 #include "leptjson.hpp"
-
+#include <assert.h>	/* assert() */
+#include <stdlib.h>	/* nullptr strtod() */
+//tutorial02
+#include <errno.h>   /* errno, ERANGE */
+#include <math.h>    /* HUGE_VAL */
+//tutorial03
+#include <memory>	/*   memcpy     */
 using namespace lept;
-using std::string;
-//=======================================================
-//toturial01
+
 #define EXPECT(c,ch) \
 		do {\
 			assert(*c->json_ == ch);\
 			c->json_++;\
 		} while (0)
 
-//=======================================================
-//toturial02
-#define ISDIGIT(ch) ((ch)>='0' && (ch)<='9')
-#define ISDIGIT1TO9(ch) ((ch)>='1' && (ch)<='9')
-
-//=======================================================
-//toturial03
 #define lept_init() \
 	do{\
-		type_=LEPT_NULL;\
+		set_type(LEPT_NULL);\
 	}while(0)
 
-#define lept_set_null() lept_free()
-
-#ifndef LEPT_PARSE_STACK_INIT_SIZE
-#define LEPT_PARSE_STACK_INTI_SIZE 256
-#endif
+#define ISDIGIT(ch) ((ch)>='0' && (ch)<='9')
+#define ISDIGIT1TO9(ch) ((ch)>='1' && (ch)<='9')
 
 //无名命名空间
 //只能在文件内调用
@@ -227,7 +223,7 @@ double lept::lept_value::lept_get_number(){
 	return n_;
 }
 
-//==========================================================================================================
+//=======================================
 //tutorial03
 void lept_value::lept_set_string(const char* s, size_t len) {
 	assert(this != nullptr && (s != nullptr || len == 0));
