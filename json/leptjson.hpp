@@ -1,5 +1,5 @@
 #pragma once
-/*		leptjson.h		*/
+/*		leptjson.hpp		*/
 
 namespace lept {
 	enum lept_type {
@@ -23,14 +23,25 @@ namespace lept {
 	//=== class
 	//=== lept_value 
 	class lept_value {
-		double n_;
+		union{
+			struct
+			{
+				char* s_;
+				size_t len_;
+				/* data */
+			};
+			double n_;
+		};
 		lept_type type_;
 	public:
-		//===========
-		//tutorial01
+		//=====================================
+		//=====================================
 		int lept_parse(const char*json);
 		lept_type lept_get_type();
-		//===========
+
+
+		//=====================================
+		//=====================================
 		//tutorial02
 		double lept_get_number();
 		// 设置type_
@@ -64,6 +75,12 @@ namespace lept {
 		int lept_parse_whitespace_second();
 	};
 
+
+int lept_parse_literal(lept_context* c, lept_value* v, const char* literal,lept_type&& type);
+
+int lept_parse_number(lept_context* c, lept_value* v);
+
+int lept_parse_value(lept_context* c, lept_value* v);
 }
 
 
