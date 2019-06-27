@@ -163,17 +163,6 @@ namespace {
 
 	}
 
-	//解析value
-	int lept_parse_value(lept_context* c, lept_value* v) {
-		switch (*c->json_) {
-		case 't': return lept_parse_literal(c, v, "true", LEPT_TRUE);
-		case 'f': return lept_parse_literal(c, v, "false", LEPT_FALSE);
-		case 'n': return lept_parse_literal(c, v, "null", LEPT_NULL);
-		default:  return lept_parse_number(c, v);
-		case '\0':return LEPT_PARSE_EXPECT_VALUE;
-		}
-	}
-
 	int lept_parse_string(lept_context* c, lept_value* v) {
 		size_t head = c->top_, len;
 		const char* p;
@@ -191,10 +180,24 @@ namespace {
 				c->top_ = head;
 				return LEPT_PARSE_MISS_QUOTATION_MARK;
 			default:
-				PUTC(c,ch);
+				PUTC(c, ch);
 			}
 		}
 	}
+
+	//解析value
+	int lept_parse_value(lept_context* c, lept_value* v) {
+		switch (*c->json_) {
+		case 't': return lept_parse_literal(c, v, "true", LEPT_TRUE);
+		case 'f': return lept_parse_literal(c, v, "false", LEPT_FALSE);
+		case 'n': return lept_parse_literal(c, v, "null", LEPT_NULL);
+		default:  return lept_parse_number(c, v);
+		case '"':  return lept_parse_string(c, v);
+		case '\0':return LEPT_PARSE_EXPECT_VALUE;
+		}
+	}
+
+
 }
 //=====================================================
 // lept_context
@@ -235,8 +238,8 @@ void* lept_context::lept_context_push(size_t size) {
 */
 		auto tmp = stack_;
 		stack_ = new char[size_];
-		memcpy(stack_, tmp, sizeof(tmp));
 		if (tmp != nullptr) {
+			memcpy(stack_, tmp, sizeof(tmp));
 			delete[] tmp;
 		}
 	}
@@ -305,4 +308,20 @@ void lept_value::lept_free() {
 		delete[] s_;
 	}
 	type_ = LEPT_NULL;
+}
+
+int lept_value::lept_get_boolean() {
+	assert(this != nullptr);
+	return type_;
+}
+
+void lept_value::lept_set_boolean(int b) {
+	assert(this != nullptr);
+	set_type((b ? LEPT_TRUE : LEPT_FALSE));
+}
+
+template <class T>
+void lept_value::lept_set_number(T&& n) {
+	assert(this != nullptr && type_ == LEPT_NUMBER);
+	n_ = n;
 }

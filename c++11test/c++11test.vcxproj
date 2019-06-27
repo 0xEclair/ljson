@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F8A38021-515F-4E8E-9882-6583590EEB21}</ProjectGuid>
+    <ProjectGuid>{5A4EFDC9-60D6-43C9-AC0D-1BEA714DFC57}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>json</RootNamespace>
+    <RootNamespace>c11test</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -142,11 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="leptjson.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="leptjson.cpp" />
-    <ClCompile Include="test.cpp" />
+    <ClCompile Include="..\json\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

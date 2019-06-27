@@ -31,27 +31,31 @@ using namespace std;
 #define EXPECT_TRUE(actual) EXPECT_EQ_BASE((actual) != 0, "true", "false", "%s")
 #define EXPECT_FALSE(actual) EXPECT_EQ_BASE((actual) == 0, "false", "true", "%s")
 
-static void test_parse_true() {
+void test_parse_true() {
 	lept_value v;
 	v.set_type(LEPT_NULL);
-	v.lept_set_boolean();
+	v.lept_set_boolean(0);
 	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse("true"));
 	EXPECT_EQ_INT(LEPT_TRUE, v.lept_get_type());
 	v.lept_free();
 }
 
-static void test_parse_false() {
+void test_parse_false() {
 	lept_value v;
-	v.set_type(LEPT_FALSE);
+	v.set_type(LEPT_NULL);
+	v.lept_set_boolean(1);
 	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse("false"));
 	EXPECT_EQ_INT(LEPT_FALSE, v.lept_get_type());
+	v.lept_free();
 }
 
-static void test_parse_null() {
+void test_parse_null() {
 	lept_value v;
-	v.set_type(LEPT_FALSE);
+	v.set_type(LEPT_NULL);
+	v.lept_set_boolean(0);
 	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse("null"));
 	EXPECT_EQ_INT(LEPT_NULL, v.lept_get_type());
+	v.lept_free();
 }
 
 
@@ -66,6 +70,7 @@ static void test_parse_null() {
         EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse(json));\
         EXPECT_EQ_INT(LEPT_NUMBER, v.lept_get_type());\
         EXPECT_EQ_DOUBLE(expect, v.lept_get_number());\
+		v.lept_free();\
     } while(0)
 void test_parse_number() {
 	TEST_NUMBER(0.0, "0");
@@ -98,12 +103,32 @@ void test_parse_number() {
 	TEST_NUMBER(-1.7976931348623157e+308, "-1.7976931348623157e+308");
 }
 
+#define TEST_STRING(expect, json)\
+    do {\
+        lept_value v;\
+        v.set_type(LEPT_NULL);\
+        EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse(json));\
+        EXPECT_EQ_INT(LEPT_STRING, v.lept_get_type());\
+        EXPECT_EQ_STRING(expect, v.lept_get_string(), v.lept_get_string_length());\
+        v.lept_free();\
+    } while(0)
+
+static void test_parse_string() {
+	TEST_STRING("", "\"\"");
+	TEST_STRING("Hello", "\"Hello\"");
+#if 0
+	TEST_STRING("Hello\nWorld", "\"Hello\\nWorld\"");
+	TEST_STRING("\" \\ / \b \f \n \r \t", "\"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"");
+#endif
+}
+
 #define TEST_ERROR(error, json)\
     do {\
         lept_value v;\
         v.set_type(LEPT_FALSE);\
         EXPECT_EQ_INT(error, v.lept_parse(json));\
         EXPECT_EQ_INT(LEPT_NULL, v.lept_get_type());\
+		v.lept_free();\
     } while(0)
 
 static void test_parse_expect_value() {
@@ -145,15 +170,73 @@ static void test_parse_number_too_big() {
 #endif
 }
 
+void test_parse_missing_quotation_mark() {
+	TEST_ERROR(LEPT_PARSE_MISS_QUOTATION_MARK, "\"");
+	TEST_ERROR(LEPT_PARSE_MISS_QUOTATION_MARK, "\"abc");
+}
+
+static void test_parse_invalid_string_escape() {
+#if 0
+	TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\v\"");
+	TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\'\"");
+	TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\0\"");
+	TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\x12\"");
+#endif
+}
+
+static void test_parse_invalid_string_char() {
+#if 0
+	TEST_ERROR(LEPT_PARSE_INVALID_STRING_CHAR, "\"\x01\"");
+	TEST_ERROR(LEPT_PARSE_INVALID_STRING_CHAR, "\"\x1F\"");
+#endif
+}
+
+void test_access_null() {
+	lept_value v;
+	v.set_type(LEPT_NULL); 
+	v.lept_set_string("a", 1);
+	v.lept_set_null();
+	EXPECT_EQ_INT(LEPT_NULL, v.lept_get_type());
+	v.lept_free();
+}
+
+void test_access_boolean() {
+	/* \TODO */
+	/* Use EXPECT_TRUE() and EXPECT_FALSE() */
+}
+
+void test_access_number() {
+	/* \TODO */
+}
+
+void test_access_string() {
+	lept_value v;
+	v.set_type(LEPT_NULL);
+	v.lept_set_string( "", 0);
+	EXPECT_EQ_STRING("", v.lept_get_string(), v.lept_get_string_length());
+	v.lept_set_string( "Hello", 5);
+	EXPECT_EQ_STRING("Hello", v.lept_get_string(), v.lept_get_string_length());
+	v.lept_free();
+}
+
 static void test_parse() {
 	test_parse_null();
 	test_parse_true();
 	test_parse_false();
 	test_parse_number();
+	test_parse_string();
 	test_parse_expect_value();
 	test_parse_invalid_value();
 	test_parse_root_not_singular();
 	test_parse_number_too_big();
+	test_parse_missing_quotation_mark();
+	test_parse_invalid_string_escape();
+	test_parse_invalid_string_char();
+
+	test_access_null();
+	test_access_boolean();
+	test_access_number();
+	test_access_string();
 }
 
 

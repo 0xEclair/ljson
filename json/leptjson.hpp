@@ -9,6 +9,7 @@
 #include <math.h>    /* HUGE_VAL */
 //tutorial03
 #include <string>	/*   memcpy     */
+#define lept_set_null lept_free
 
 namespace lept {
 	enum lept_type {
@@ -68,11 +69,10 @@ namespace lept {
 		void lept_free();
 
 		int lept_get_boolean();
-		template <int>
-		void lept_set_boolean(int&& b);
+		void lept_set_boolean(int b);
 
 		double lept_get_number();
-		template<class T>
+		template <class T>
 		void lept_set_number(T&& n);
 
 		const char* lept_get_string() {
