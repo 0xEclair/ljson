@@ -26,7 +26,10 @@ namespace lept {
 		LEPT_PARSE_EXPECT_VALUE,
 		LEPT_PARSE_INVALID_VALUE,
 		LEPT_PARSE_ROOT_NOT_SINGULAR,
-		LEPT_PARSE_NUMBER_TOO_BIG
+		LEPT_PARSE_NUMBER_TOO_BIG,
+		LEPT_PARSE_MISS_QUOTATION_MARK,
+		LEPT_PARSE_INVALID_STRING_ESCAPE,
+		LEPT_PARSE_INVALID_STRING_CHAR
 	};
 	//==============================
 	//=== class
@@ -45,7 +48,7 @@ namespace lept {
 
 		//=====================================
 		//tutorial03
-		void lept_free();
+		
 	public:
 
 		//=====================================
@@ -62,12 +65,15 @@ namespace lept {
 		//=====================================
 		//=====================================
 		//tutorial03
+		void lept_free();
+
 		int lept_get_boolean();
 		template <int>
 		void lept_set_boolean(int&& b);
 
 		double lept_get_number();
-		void lept_set_number(double&& n);
+		template<class T>
+		void lept_set_number(T&& n);
 
 		const char* lept_get_string() {
 			assert(this != nullptr && type_ == LEPT_STRING);
@@ -103,12 +109,24 @@ namespace lept {
 	//=== class
 	//=== lept_context 
 	class lept_context {
+
 	public:
 		const char* json_;
+		// 动态堆栈
+		char* stack_;
+		//堆栈容量
+		size_t size_;
+		//栈顶位置
+		size_t top_;
 
 		// 解析空白
 		void lept_parse_whitespace();
 		// 解析第二部分的空白
 		int lept_parse_whitespace_second();
+		// ==
+		// toturial03
+		void* lept_context_push(size_t size);
+		void* lept_context_pop(size_t size);
+
 	};
 }
