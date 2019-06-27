@@ -26,13 +26,18 @@ using namespace std;
 
 #define EXPECT_EQ_INT(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%d")
 #define EXPECT_EQ_DOUBLE(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%.17g")
-
+#define EXPECT_EQ_STRING(expect, actual, alength) \
+    EXPECT_EQ_BASE(sizeof(expect) - 1 == alength && memcmp(expect, actual, alength) == 0, expect, actual, "%s")
+#define EXPECT_TRUE(actual) EXPECT_EQ_BASE((actual) != 0, "true", "false", "%s")
+#define EXPECT_FALSE(actual) EXPECT_EQ_BASE((actual) == 0, "false", "true", "%s")
 
 static void test_parse_true() {
 	lept_value v;
-	v.set_type(LEPT_FALSE);
+	v.set_type(LEPT_NULL);
+	v.lept_set_boolean();
 	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse("true"));
 	EXPECT_EQ_INT(LEPT_TRUE, v.lept_get_type());
+	v.lept_free();
 }
 
 static void test_parse_false() {
