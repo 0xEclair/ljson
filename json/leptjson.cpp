@@ -29,6 +29,11 @@ using std::string;
 #define LEPT_PARSE_STACK_INTI_SIZE 256
 #endif
 
+#define PUTC(c,ch) \
+	do{\
+		*(char*)c->lept_context_push(sizeof(char))=(ch);\
+	}while(0)
+
 //无名命名空间
 //只能在文件内调用
 //暂时只解析符号
@@ -169,8 +174,27 @@ namespace {
 		}
 	}
 
-
-
+	int lept_parse_string(lept_context* c, lept_value* v) {
+		size_t head = c->top_, len;
+		const char* p;
+		EXPECT(c, '\"');
+		p = c->json_;
+		for (;;) {
+			char ch = *p++;
+			switch (ch) {
+			case '\"':
+				len = c->top_ - head;
+				v->lept_set_string((const char*)c->lept_context_pop(len), len);
+				c->json_ = p;
+				return LEPT_PARSE_OK;
+			case '\0':
+				c->top_ = head;
+				return LEPT_PARSE_MISS_QUOTATION_MARK;
+			default:
+				PUTC(c,ch);
+			}
+		}
+	}
 }
 //=====================================================
 // lept_context
@@ -193,16 +217,50 @@ int lept_context::lept_parse_whitespace_second() {
 	json_ = p;
 	return 0;
 }
+
+void* lept_context::lept_context_push(size_t size) {
+	void* res;
+	assert(size > 0);
+
+	if (top_ + size >= size_) {
+		if (size_ == 0) {
+			size_ = LEPT_PARSE_STACK_INTI_SIZE;
+		}
+		while (top_ + size >= size_) {
+			size_ += size_ >> 1;	/* size_ * 1.5 */
+		}
+/*
+		如果stack_=nullptr
+		tmp也等于nullptr
+*/
+		auto tmp = stack_;
+		stack_ = new char[size_];
+		memcpy(stack_, tmp, sizeof(tmp));
+		if (tmp != nullptr) {
+			delete[] tmp;
+		}
+	}
+	res = stack_ + top_;
+	return res;
+}
+
+void* lept_context::lept_context_pop(size_t size) {
+	assert(top_ >= size);
+	return stack_ + (top_ -= size);
+}
+
 //=====================================================
 // lept_value
 int lept_value::lept_parse(const char* json) {
 	lept_context c;
 	assert(this != nullptr);
 	c.json_ = json;
+	c.stack_ = nullptr;
+	c.size_ = c.top_ = 0;
 	//若 lept_parse() 失败，会把 v 设为 null 类型
 	//所以这里先把它设为 null
 	//让 lept_parse_value() 写入解析出来的根值。
-	type_ = LEPT_NULL;
+	lept_init();
 	c.lept_parse_whitespace();
 	int res=lept_parse_value(&c,this);
 	if (res == LEPT_PARSE_OK) {
@@ -212,6 +270,8 @@ int lept_value::lept_parse(const char* json) {
 			res = LEPT_PARSE_ROOT_NOT_SINGULAR;
 		}
 	}
+	assert(c.top_ == 0);
+	delete[] c.stack_;
 	return res;
 }
 
