@@ -11,6 +11,9 @@
 #include <string>	/*   memcpy     */
 #define lept_set_null lept_free
 
+/* c++中size_t是 unsigned long long  */	
+#define size_t unsigned int
+
 namespace lept {
 	enum lept_type {
 		LEPT_NULL,
@@ -32,12 +35,8 @@ namespace lept {
 		LEPT_PARSE_INVALID_STRING_ESCAPE,
 		LEPT_PARSE_INVALID_STRING_CHAR
 	};
-	//=== class
-	//=== lept_value 
 	class lept_value;
 
-	//=== class
-	//=== lept_context 
 	class lept_context;
 }
 
@@ -45,16 +44,17 @@ namespace lept {
 //=== class
 //=== lept_value 
 class lept::lept_value {
-	union {
+	//8bit对齐
+	union {	// --------------12->16
 		struct
 		{
-			char* s_;
-			size_t len_;
+			char* s_;		//8
+			size_t len_;	//4->8
 			/* data */
 		};
-		double n_;
+		double n_;			//8
 	};
-	lept_type type_;
+	lept_type type_;		//4->8
 
 	//=====================================
 	//tutorial03
@@ -77,18 +77,18 @@ public:
 	//tutorial03
 	void lept_free();
 
-	int lept_get_boolean();
+	int lept_get_boolean() const;
 	void lept_set_boolean(int b);
 
-	double lept_get_number();
+	double lept_get_number() const;
 	template <class T>
 	void lept_set_number(T&& n);
 
-	const char* lept_get_string() {
+	const char* lept_get_string() const {
 		assert(this != nullptr && type_ == LEPT_STRING);
 		return s_;
 	}
-	size_t lept_get_string_length() {
+	size_t lept_get_string_length() const {
 		assert(this != nullptr && type_ == LEPT_STRING);
 		return len_;
 	}
@@ -103,14 +103,6 @@ public:
 		//没有把引用作参数，所以不用转发
 		type_ = t;
 	}
-	// 设置n_
-	template <typename T>
-	void set_n(T&& t) {
-		n_ = t;
-	}
-	const double& get_n()const {
-		return n_;
-	}
 };
 
 //==============================
@@ -119,13 +111,13 @@ public:
 class lept::lept_context {
 
 public:
-	const char* json_;
+	const char* json_;		//8
 	// 动态堆栈
-	char* stack_;
+	char* stack_;			//8
 	//堆栈容量
-	size_t size_;
+	size_t size_;			//4
 	//栈顶位置
-	size_t top_;
+	size_t top_;			//4
 
 	// 解析空白
 	void lept_parse_whitespace();
