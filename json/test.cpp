@@ -206,12 +206,23 @@ void test_access_null() {
 }
 
 void test_access_boolean() {
-	/* \TODO */
-	/* Use EXPECT_TRUE() and EXPECT_FALSE() */
+	lept_value v;
+	v.set_type(LEPT_NULL);
+	v.lept_set_string("a", 1);
+	v.lept_set_boolean(1);
+	EXPECT_TRUE(v.lept_get_boolean());
+	v.lept_set_boolean(0);
+	EXPECT_FALSE(v.lept_get_boolean());
+	v.lept_free();
 }
 
 void test_access_number() {
-	/* \TODO */
+	lept_value v;
+	v.set_type(LEPT_NULL);
+	v.lept_set_string("a", 1);
+	v.lept_set_number(1234.5);
+	EXPECT_EQ_DOUBLE(1234.5, v.lept_get_number());
+	v.lept_free();
 }
 
 void test_access_string() {
@@ -255,6 +266,8 @@ int main() {
 	test_parse();
 	printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
 
+	std::cout << sizeof(lept_value) << std::endl;
+	std::cout << sizeof(lept_context) << std::endl;
 
 	_CrtDumpMemoryLeaks();
 
