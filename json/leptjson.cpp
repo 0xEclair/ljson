@@ -165,9 +165,12 @@ namespace {
 			for (++p; ISDIGIT(*p); ++p);
 		}
 		errno = 0;
-		v->set_n(strtod(c->json_, NULL));
-		if (errno == ERANGE && (v->get_n() == HUGE_VAL || v->get_n() == -HUGE_VAL))
+		v->lept_set_number(strtod(c->json_, NULL));
+		if (errno == ERANGE && (v->lept_get_number() == HUGE_VAL || v->lept_get_number() == -HUGE_VAL)) {
+			v->set_type(LEPT_NULL);			/* 教程里面没写这步 
+											因为上面lept_set_number会改变type_为number类型  */
 			return LEPT_PARSE_NUMBER_TOO_BIG;
+		}
 		v->set_type(LEPT_NUMBER) ;
 		c->json_ = p;
 		return LEPT_PARSE_OK;
@@ -267,6 +270,7 @@ namespace lept {
 			/*
 			如果stack_=nullptr
 			tmp也等于nullptr
+			模仿realloc()
 			*/
 			auto tmp = stack_;
 			stack_ = new char[size_];
@@ -318,7 +322,7 @@ namespace lept {
 
 	//==========================================================================================================
 	//tutorial02
-	double lept::lept_value::lept_get_number() {
+	double lept::lept_value::lept_get_number() const{
 		assert(this != nullptr && type_ == LEPT_NUMBER);
 		return n_;
 	}
@@ -343,9 +347,9 @@ namespace lept {
 		type_ = LEPT_NULL;
 	}
 
-	int lept_value::lept_get_boolean() {
-		assert(this != nullptr);
-		return type_;
+	int lept_value::lept_get_boolean()const {
+		assert(this!= NULL && (type_ == LEPT_TRUE || type_ == LEPT_FALSE));		
+		return type_==LEPT_TRUE;
 	}
 
 	void lept_value::lept_set_boolean(int b) {
@@ -357,5 +361,6 @@ namespace lept {
 	void lept_value::lept_set_number(T&& n) {
 		lept_free();
 		n_ = n;
+		type_ = LEPT_NUMBER;
 	}
 }
