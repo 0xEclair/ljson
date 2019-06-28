@@ -5,7 +5,6 @@
 #include <crtdbg.h>
 #endif
 
-using namespace lept;
 using std::string;
 //=======================================================
 //toturial01
@@ -49,6 +48,7 @@ using std::string;
 //只能在文件内调用
 //暂时只解析符号
 namespace {
+
 	//==========
 	//tutorial01
 	//解析null
@@ -229,130 +229,133 @@ namespace {
 
 
 }
-//=====================================================
-// lept_context
-void lept_context::lept_parse_whitespace(){
-	const char* p = json_;
-	while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') {
-		p++;
+
+namespace lept {
+	//=====================================================
+	// lept_context
+	void lept_context::lept_parse_whitespace() {
+		const char* p = json_;
+		while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') {
+			p++;
+		}
+		json_ = p;
 	}
-	json_ = p;
-}
 
-int lept_context::lept_parse_whitespace_second() {
-	const char* p = json_;
-	while (*p != '\0') {
-		if (*p != ' ' || *p != '\t' || *p != '\n' || *p != '\r') {
-			return LEPT_PARSE_ROOT_NOT_SINGULAR;
+	int lept_context::lept_parse_whitespace_second() {
+		const char* p = json_;
+		while (*p != '\0') {
+			if (*p != ' ' || *p != '\t' || *p != '\n' || *p != '\r') {
+				return LEPT_PARSE_ROOT_NOT_SINGULAR;
+			}
+			p++;
 		}
-		p++;
+		json_ = p;
+		return 0;
 	}
-	json_ = p;
-	return 0;
-}
 
-void* lept_context::lept_context_push(size_t size) {
-	void* res;
-	assert(size > 0);
+	void* lept_context::lept_context_push(size_t size) {
+		void* res;
+		assert(size > 0);
 
-	if (top_ + size >= size_) {
-		if (size_ == 0) {
-			size_ = LEPT_PARSE_STACK_INTI_SIZE;
+		if (top_ + size >= size_) {
+			if (size_ == 0) {
+				size_ = LEPT_PARSE_STACK_INTI_SIZE;
+			}
+			while (top_ + size >= size_) {
+				size_ += size_ >> 1;	/* size_ * 1.5 */
+			}
+			/*
+			如果stack_=nullptr
+			tmp也等于nullptr
+			*/
+			auto tmp = stack_;
+			stack_ = new char[size_];
+			if (tmp != nullptr) {
+				memcpy(stack_, tmp, sizeof(tmp));
+				delete[] tmp;
+			}
 		}
-		while (top_ + size >= size_) {
-			size_ += size_ >> 1;	/* size_ * 1.5 */
-		}
-/*
-		如果stack_=nullptr
-		tmp也等于nullptr
-*/
-		auto tmp = stack_;
-		stack_ = new char[size_];
-		if (tmp != nullptr) {
-			memcpy(stack_, tmp, sizeof(tmp));
-			delete[] tmp;
-		}
+		res = stack_ + top_;
+		top_ += size;
+		return res;
 	}
-	res = stack_ + top_;
-	top_ += size;
-	return res;
-}
 
-void* lept_context::lept_context_pop(size_t size) {
-	assert(top_ >= size);
-	return stack_ + (top_ -= size);
-}
+	void* lept_context::lept_context_pop(size_t size) {
+		assert(top_ >= size);
+		return stack_ + (top_ -= size);
+	}
 
-//=====================================================
-// lept_value
-int lept_value::lept_parse(const char* json) {
-	lept_context c;
-	assert(this != nullptr);
-	c.json_ = json;
-	c.stack_ = nullptr;
-	c.size_ = c.top_ = 0;
-	//若 lept_parse() 失败，会把 v 设为 null 类型
-	//所以这里先把它设为 null
-	//让 lept_parse_value() 写入解析出来的根值。
-	lept_init();
-	c.lept_parse_whitespace();
-	int res=lept_parse_value(&c,this);
-	if (res == LEPT_PARSE_OK) {
+	//=====================================================
+	// lept_value
+	int lept_value::lept_parse(const char* json) {
+		lept_context c;
+		assert(this != nullptr);
+		c.json_ = json;
+		c.stack_ = nullptr;
+		c.size_ = c.top_ = 0;
+		//若 lept_parse() 失败，会把 v 设为 null 类型
+		//所以这里先把它设为 null
+		//让 lept_parse_value() 写入解析出来的根值。
+		lept_init();
 		c.lept_parse_whitespace();
-		if (*c.json_ != '\0') {
-			type_ = LEPT_NULL;
-			res = LEPT_PARSE_ROOT_NOT_SINGULAR;
+		int res = lept_parse_value(&c, this);
+		if (res == LEPT_PARSE_OK) {
+			c.lept_parse_whitespace();
+			if (*c.json_ != '\0') {
+				type_ = LEPT_NULL;
+				res = LEPT_PARSE_ROOT_NOT_SINGULAR;
+			}
 		}
+		assert(c.top_ == 0);
+		delete[] c.stack_;
+		return res;
 	}
-	assert(c.top_ == 0);
-	delete[] c.stack_;
-	return res;
-}
 
-lept_type lept_value::lept_get_type() {
-	assert(this != nullptr);
-	return type_;
-}
-
-//==========================================================================================================
-//tutorial02
-double lept::lept_value::lept_get_number(){
-	assert(this != nullptr && type_ == LEPT_NUMBER);
-	return n_;
-}
-
-//==========================================================================================================
-//tutorial03
-void lept_value::lept_set_string(const char* s, size_t len) {
-	assert(this != nullptr && (s != nullptr || len == 0));
-	lept_free();
-	s_ = new char[len + 1];
-	memcpy(s_, s, len);
-	s_[len] = '\0';
-	len_ = len;
-	set_type(LEPT_STRING);
-}
-
-void lept_value::lept_free() {
-	assert(this != nullptr);
-	if (type_ == LEPT_STRING) {
-		delete[] s_;
+	lept_type lept_value::lept_get_type() {
+		assert(this != nullptr);
+		return type_;
 	}
-	type_ = LEPT_NULL;
-}
 
-int lept_value::lept_get_boolean() {
-	assert(this != nullptr);
-	return type_;
-}
+	//==========================================================================================================
+	//tutorial02
+	double lept::lept_value::lept_get_number() {
+		assert(this != nullptr && type_ == LEPT_NUMBER);
+		return n_;
+	}
 
-void lept_value::lept_set_boolean(int b) {
-	lept_free();
-	set_type((b ? LEPT_TRUE : LEPT_FALSE));
-}
+	//==========================================================================================================
+	//tutorial03
+	void lept_value::lept_set_string(const char* s, size_t len) {
+		assert(this != nullptr && (s != nullptr || len == 0));
+		lept_free();
+		s_ = new char[len + 1];
+		memcpy(s_, s, len);
+		s_[len] = '\0';
+		len_ = len;
+		set_type(LEPT_STRING);
+	}
 
-template <class T>
-void lept_value::lept_set_number(T&& n) {
-	lept_free();
-	n_ = n;
+	void lept_value::lept_free() {
+		assert(this != nullptr);
+		if (type_ == LEPT_STRING) {
+			delete[] s_;
+		}
+		type_ = LEPT_NULL;
+	}
+
+	int lept_value::lept_get_boolean() {
+		assert(this != nullptr);
+		return type_;
+	}
+
+	void lept_value::lept_set_boolean(int b) {
+		lept_free();
+		set_type((b ? LEPT_TRUE : LEPT_FALSE));
+	}
+
+	template <class T>
+	void lept_value::lept_set_number(T&& n) {
+		lept_free();
+		n_ = n;
+	}
 }
