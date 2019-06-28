@@ -1,5 +1,9 @@
 /*		leptjson.cpp		*/
 #include "leptjson.hpp"
+#ifdef _WINDOWS
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif
 
 using namespace lept;
 using std::string;
@@ -23,7 +27,6 @@ using std::string;
 		type_=LEPT_NULL;\
 	}while(0)
 
-#define lept_set_null() lept_free()
 
 #ifndef LEPT_PARSE_STACK_INIT_SIZE
 #define LEPT_PARSE_STACK_INTI_SIZE 256
@@ -33,6 +36,14 @@ using std::string;
 	do{\
 		*(char*)c->lept_context_push(sizeof(char))=(ch);\
 	}while(0)
+
+//#define PUTCT(c,ch) \
+//case '\\##'ch:\
+//{			  \
+//	PUTC(c,'\\');\
+//	PUTC(c,ch);\
+//}
+
 
 //无名命名空间
 //只能在文件内调用
@@ -179,7 +190,26 @@ namespace {
 			case '\0':
 				c->top_ = head;
 				return LEPT_PARSE_MISS_QUOTATION_MARK;
+			case '\\':
+				switch (*p++) {
+					case '\"':PUTC(c, '\"'); break;
+					case '\\':PUTC(c, '\\'); break;
+					case '/':PUTC(c, '/'); break;
+					case 'b':PUTC(c, '\b'); break;
+					case 'f':PUTC(c, '\f'); break;
+					case 'n':PUTC(c, '\n'); break;
+					case 'r':PUTC(c, '\r'); break;
+					case 't':PUTC(c, '\t'); break;
+					default:
+						c->top_ = head;
+						return LEPT_PARSE_INVALID_STRING_ESCAPE;
+					}
+				break;
 			default:
+				if ((unsigned char)ch < 0x20) {
+					c->top_ = head;
+					return LEPT_PARSE_INVALID_STRING_CHAR;
+				}
 				PUTC(c, ch);
 			}
 		}
@@ -244,6 +274,7 @@ void* lept_context::lept_context_push(size_t size) {
 		}
 	}
 	res = stack_ + top_;
+	top_ += size;
 	return res;
 }
 
@@ -316,12 +347,12 @@ int lept_value::lept_get_boolean() {
 }
 
 void lept_value::lept_set_boolean(int b) {
-	assert(this != nullptr);
+	lept_free();
 	set_type((b ? LEPT_TRUE : LEPT_FALSE));
 }
 
 template <class T>
 void lept_value::lept_set_number(T&& n) {
-	assert(this != nullptr && type_ == LEPT_NUMBER);
+	lept_free();
 	n_ = n;
 }

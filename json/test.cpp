@@ -1,4 +1,9 @@
 #pragma once
+#ifdef _WINDOWS
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -116,7 +121,7 @@ void test_parse_number() {
 static void test_parse_string() {
 	TEST_STRING("", "\"\"");
 	TEST_STRING("Hello", "\"Hello\"");
-#if 0
+#if 1
 	TEST_STRING("Hello\nWorld", "\"Hello\\nWorld\"");
 	TEST_STRING("\" \\ / \b \f \n \r \t", "\"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"");
 #endif
@@ -176,7 +181,7 @@ void test_parse_missing_quotation_mark() {
 }
 
 static void test_parse_invalid_string_escape() {
-#if 0
+#if 1
 	TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\v\"");
 	TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\'\"");
 	TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\0\"");
@@ -185,7 +190,7 @@ static void test_parse_invalid_string_escape() {
 }
 
 static void test_parse_invalid_string_char() {
-#if 0
+#if 1
 	TEST_ERROR(LEPT_PARSE_INVALID_STRING_CHAR, "\"\x01\"");
 	TEST_ERROR(LEPT_PARSE_INVALID_STRING_CHAR, "\"\x1F\"");
 #endif
@@ -241,15 +246,17 @@ static void test_parse() {
 
 
 int main() {
-	//lept_parse_null不能被调用
-	//声明在namespace{}里面的只能在文件内被调用
-	//lept_value v;
-	//lept_context c;
-	//lept_parse_null(c, v);
+	//_CrtSetBreakAlloc(71);
+	//_CrtSetBreakAlloc(76);
+#ifdef _WINDOWS
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
 	test_parse();
 	printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
 
-	
+
+	_CrtDumpMemoryLeaks();
 
 	return main_ret;
 }
