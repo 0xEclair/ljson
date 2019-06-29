@@ -8,7 +8,7 @@
 #include <errno.h>   /* errno, ERANGE */
 #include <math.h>    /* HUGE_VAL */
 //tutorial03
-#include <string>	/*   memcpy     */
+#include <string>	/*   memcpy()     */
 #define lept_set_null lept_free
 
 /* c++中size_t是 unsigned long long  */	
@@ -55,23 +55,14 @@ class lept::lept_value {
 		double n_;			//8
 	};
 	lept_type type_;		//4->8
-
-	//=====================================
-	//tutorial03
-
 public:
 
 	//=====================================
 	//=====================================
+	//tutorial01
 	int lept_parse(const char*json);
 	lept_type lept_get_type();
 
-	//=====================================
-	//=====================================
-	//tutorial02
-#if 0
-	double lept_get_number();
-#endif
 	//=====================================
 	//=====================================
 	//tutorial03
@@ -134,10 +125,7 @@ namespace {
 	using namespace lept;
 
 	int lept_parse_literal(lept_context* c, lept_value* v, const char* literal, lept_type&& type);
-
 	int lept_parse_number(lept_context* c, lept_value* v);
-
 	int lept_parse_string(lept_context* c, lept_value* v);
-
 	int lept_parse_value(lept_context* c, lept_value* v);
 }

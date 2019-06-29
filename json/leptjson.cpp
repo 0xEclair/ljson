@@ -26,7 +26,6 @@ using std::string;
 		type_=LEPT_NULL;\
 	}while(0)
 
-
 #ifndef LEPT_PARSE_STACK_INIT_SIZE
 #define LEPT_PARSE_STACK_INTI_SIZE 256
 #endif
@@ -36,14 +35,6 @@ using std::string;
 		*(char*)c->lept_context_push(sizeof(char))=(ch);\
 	}while(0)
 
-//#define PUTCT(c,ch) \
-//case '\\##'ch:\
-//{			  \
-//	PUTC(c,'\\');\
-//	PUTC(c,ch);\
-//}
-
-
 //无名命名空间
 //只能在文件内调用
 //暂时只解析符号
@@ -52,38 +43,6 @@ namespace {
 	//==========
 	//tutorial01
 	//解析null
-	#if 0
-	int lept_parse_null(lept_context* c, lept_value* v) {
-		EXPECT(c, 'n');
-		if (c->json_[0] != 'u' || c->json_[1] != 'l' || c->json_[2] != 'l') {
-			return LEPT_PARSE_INVALID_VALUE;
-		}
-		c->json_ += 3;
-		v->set_type(LEPT_NULL);
-		return LEPT_PARSE_OK;
-	}
-	//解析true
-	int lept_parse_true(lept_context* c, lept_value* v) {
-		EXPECT(c, 't');
-		if (c->json_[0] != 'r' || c->json_[1] != 'u' || c->json_[2] != 'e') {
-			return LEPT_PARSE_INVALID_VALUE;
-		}
-		c->json_ += 3;
-		v->set_type(LEPT_TRUE);
-		return LEPT_PARSE_OK;
-	}
-
-	//解析false
-	int lept_parse_false(lept_context* c, lept_value* v) {
-		EXPECT(c, 'f');
-		if (c->json_[0] != 'a' || c->json_[1] != 'l' || c->json_[2] != 's'||c->json_[3]!='e') {
-			return LEPT_PARSE_INVALID_VALUE;
-		}
-		c->json_ += 4;
-		v->set_type(LEPT_FALSE);
-		return LEPT_PARSE_OK;
-	}
-	#endif
 	//==========
 	//tutorial02
 	int lept_parse_literal(lept_context* c, lept_value* v, const char* literal,lept_type&& type) {
@@ -100,36 +59,6 @@ namespace {
 	}
 
 	int lept_parse_number(lept_context* c, lept_value* v) {
-		////检测首位合法性
-		//if (*c->json_ != '-' && !(ISDIGIT(*c->json_))) {
-		//	return LEPT_PARSE_INVALID_VALUE;
-		//}
-		////检测0后字符的合法性
-		//if (*c->json_ == '0') {
-		//	if (c->json_[1] != '.' && c->json_[1] != 'e' && c->json_[1] != 'E' && c->json_[1] != '\0') {
-		//		return LEPT_PARSE_ROOT_NOT_SINGULAR;
-		//	}
-		//}
-		//const char* tmp = c->json_;
-		//while (*(++tmp) != '\0') {
-		//	if (*tmp == '.' && !ISDIGIT(tmp[1])) {
-		//			return LEPT_PARSE_INVALID_VALUE;
-		//		}
-		//}
-
-		//char* end;
-		///* \TODO validate number */
-		//errno = 0;
-		//v->set_n(strtod(c->json_, &end));
-		//if (c->json_ == end) {
-		//	return LEPT_PARSE_INVALID_VALUE;
-		//}
-		//c->json_ = end;
-		//if (errno == ERANGE && (v->get_n() == HUGE_VAL|| v->get_n() == -HUGE_VAL)) {
-		//	return LEPT_PARSE_NUMBER_TOO_BIG;
-		//}
-		//v->set_type(LEPT_NUMBER);
-		//return LEPT_PARSE_OK;
 		const char* p = c->json_;
 		if (*p == '-') {
 			++p;
@@ -203,6 +132,7 @@ namespace {
 					case 'n':PUTC(c, '\n'); break;
 					case 'r':PUTC(c, '\r'); break;
 					case 't':PUTC(c, '\t'); break;
+					case 'u':
 					default:
 						c->top_ = head;
 						return LEPT_PARSE_INVALID_STRING_ESCAPE;

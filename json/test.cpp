@@ -15,9 +15,6 @@ static int test_count = 0;
 static int test_pass = 0;
 using namespace std;
 
-
-
-
 #define EXPECT_EQ_BASE(equality, expect, actual, format) \
     do {\
         test_count++;\
@@ -62,10 +59,6 @@ void test_parse_null() {
 	EXPECT_EQ_INT(LEPT_NULL, v.lept_get_type());
 	v.lept_free();
 }
-
-
-
-
 
 //==========================================================================
 //tutorial02
@@ -254,7 +247,6 @@ static void test_parse() {
 	test_access_number();
 	test_access_string();
 }
-
 
 int main() {
 	//_CrtSetBreakAlloc(71);
