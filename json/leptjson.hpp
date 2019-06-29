@@ -33,7 +33,9 @@ namespace lept {
 		LEPT_PARSE_NUMBER_TOO_BIG,
 		LEPT_PARSE_MISS_QUOTATION_MARK,
 		LEPT_PARSE_INVALID_STRING_ESCAPE,
-		LEPT_PARSE_INVALID_STRING_CHAR
+		LEPT_PARSE_INVALID_STRING_CHAR,
+		LEPT_PARSE_INVALID_UNICODE_HEX,
+		LEPT_PARSE_INVALID_UNICODE_SURROGATE
 	};
 	class lept_value;
 
@@ -100,7 +102,6 @@ public:
 //=== class
 //=== lept_context 
 class lept::lept_context {
-
 public:
 	const char* json_;		//8
 	// 动态堆栈
@@ -118,7 +119,8 @@ public:
 	// toturial03
 	void* lept_context_push(size_t size);
 	void* lept_context_pop(size_t size);
-
+	// tutorial04
+	void lept_encode_utf8(const unsigned& u);
 };
 
 namespace {
@@ -128,4 +130,5 @@ namespace {
 	int lept_parse_number(lept_context* c, lept_value* v);
 	int lept_parse_string(lept_context* c, lept_value* v);
 	int lept_parse_value(lept_context* c, lept_value* v);
+	const char* lept_parse_hex4(const char* p, unsigned& u);
 }
