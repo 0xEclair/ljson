@@ -177,6 +177,7 @@ namespace {
 		case 'n': return lept_parse_literal(c, v, "null", LEPT_NULL);
 		default:  return lept_parse_number(c, v);
 		case '"':  return lept_parse_string(c, v);
+		case '[':return lept_parse_array(c, v);
 		case '\0':return LEPT_PARSE_EXPECT_VALUE;
 		}
 	}
@@ -196,6 +197,44 @@ namespace {
 			else return nullptr;
 		}
 		return p;
+	}
+
+	int lept_parse_array(lept_context* c, lept_value* v) {
+		size_t size = 0;
+		EXPECT(c, '[');
+		c->lept_parse_whitespace();
+		if (*c->json_ == ']') {
+			c->json_++;
+			v->set_type(LEPT_ARRAY);
+			v->set_size(0);
+			v->set_e(nullptr);
+			return LEPT_PARSE_OK;
+		}
+
+		int res;
+		for (;;) {
+			auto e=(lept_value*)c->lept_context_push(sizeof(lept_value));
+			/*  类内使用{LEPT_NULL}初始化  */
+			if ((res = lept_parse_value(c, e))!=LEPT_PARSE_OK) {
+				return res;
+			}
+			//memcpy(c->lept_context_push(sizeof(lept_value)), &e, sizeof(lept_value));
+			size++;
+			if (*c->json_ == ',') {
+				c->json_++;
+			}
+			else if (*c->json_ == ']') {
+				c->json_++;
+				v->set_type(LEPT_ARRAY);
+				v->set_size(size);
+				size *= sizeof(lept_value);
+				memcpy((v->e_ = new lept_value), c->lept_context_pop(size), size);
+				return LEPT_PARSE_OK;
+			}
+			else {
+				return LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
+			}
+		}
 	}
 
 }

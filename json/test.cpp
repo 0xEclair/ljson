@@ -35,7 +35,6 @@ using namespace std;
 
 void test_parse_true() {
 	lept_value v;
-	v.set_type(LEPT_NULL);
 	v.lept_set_boolean(0);
 	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse("true"));
 	EXPECT_EQ_INT(LEPT_TRUE, v.lept_get_type());
@@ -44,7 +43,6 @@ void test_parse_true() {
 
 void test_parse_false() {
 	lept_value v;
-	v.set_type(LEPT_NULL);
 	v.lept_set_boolean(1);
 	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse("false"));
 	EXPECT_EQ_INT(LEPT_FALSE, v.lept_get_type());
@@ -53,7 +51,6 @@ void test_parse_false() {
 
 void test_parse_null() {
 	lept_value v;
-	v.set_type(LEPT_NULL);
 	v.lept_set_boolean(0);
 	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse("null"));
 	EXPECT_EQ_INT(LEPT_NULL, v.lept_get_type());
@@ -192,7 +189,6 @@ static void test_parse_invalid_string_char() {
 
 void test_access_null() {
 	lept_value v;
-	v.set_type(LEPT_NULL); 
 	v.lept_set_string("a", 1);
 	v.lept_set_null();
 	EXPECT_EQ_INT(LEPT_NULL, v.lept_get_type());
@@ -201,7 +197,6 @@ void test_access_null() {
 
 void test_access_boolean() {
 	lept_value v;
-	v.set_type(LEPT_NULL);
 	v.lept_set_string("a", 1);
 	v.lept_set_boolean(1);
 	EXPECT_TRUE(v.lept_get_boolean());
@@ -212,7 +207,6 @@ void test_access_boolean() {
 
 void test_access_number() {
 	lept_value v;
-	v.set_type(LEPT_NULL);
 	v.lept_set_string("a", 1);
 	v.lept_set_number(1234.5);
 	EXPECT_EQ_DOUBLE(1234.5, v.lept_get_number());
@@ -221,7 +215,6 @@ void test_access_number() {
 
 void test_access_string() {
 	lept_value v;
-	v.set_type(LEPT_NULL);
 	v.lept_set_string( "", 0);
 	EXPECT_EQ_STRING("", v.lept_get_string(), v.lept_get_string_length());
 	v.lept_set_string( "Hello", 5);
@@ -260,7 +253,6 @@ void test_parse_invalid_unicode_surrogate() {
 
 void test_parse_array() {
 	lept_value v;
-	v.set_type(LEPT_NULL);
 	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse( "[ ]"));
 	EXPECT_EQ_INT(LEPT_ARRAY, v.lept_get_type());
 	EXPECT_EQ_SIZE_T(0, v.lept_get_array_size());
@@ -291,7 +283,6 @@ static void test_parse() {
 
 int main() {
 	//_CrtSetBreakAlloc(71);
-	//_CrtSetBreakAlloc(76);
 #ifdef _WINDOWS
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif

@@ -35,7 +35,8 @@ namespace lept {
 		LEPT_PARSE_INVALID_STRING_ESCAPE,
 		LEPT_PARSE_INVALID_STRING_CHAR,
 		LEPT_PARSE_INVALID_UNICODE_HEX,
-		LEPT_PARSE_INVALID_UNICODE_SURROGATE
+		LEPT_PARSE_INVALID_UNICODE_SURROGATE,
+		LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET
 	};
 	class lept_value;
 
@@ -55,14 +56,14 @@ class lept::lept_value {
 			/* data */
 		};
 		struct {
-			lept_value* e_;
+
 			size_t size_;
 		};
 		double n_;			//8
 	};
-	lept_type type_;		//4->8
+	lept_type type_{ LEPT_NULL };		//4->8
 public:
-
+	lept_value* e_;
 	//=====================================
 	//=====================================
 	//tutorial01
@@ -93,7 +94,7 @@ public:
 	//=====================================
 	//=====================================
 	//tutorial05
-	size_t lept_get_array_size() {
+	size_t lept_get_array_size() const{
 		assert(this != nullptr && type_ == LEPT_ARRAY);
 		return size_;
 	}
@@ -108,6 +109,14 @@ public:
 		//左值 -> T& 右值 -> T&&
 		//没有把引用作参数，所以不用转发
 		type_ = t;
+	}
+	template <typename T>
+	void set_size(T&& t) {
+		size_ = t;
+	}
+	template <typename T>
+	void set_e(T&& t) {
+		e_ = t;
 	}
 };
 
@@ -144,4 +153,5 @@ namespace {
 	int lept_parse_string(lept_context* c, lept_value* v);
 	int lept_parse_value(lept_context* c, lept_value* v);
 	const char* lept_parse_hex4(const char* p, unsigned& u);
+	int lept_parse_array(lept_context* c, lept_value* v);
 }
