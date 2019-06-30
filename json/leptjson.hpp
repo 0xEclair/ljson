@@ -54,6 +54,10 @@ class lept::lept_value {
 			size_t len_;	//4->8
 			/* data */
 		};
+		struct {
+			lept_value* e_;
+			size_t size_;
+		};
 		double n_;			//8
 	};
 	lept_type type_;		//4->8
@@ -86,6 +90,15 @@ public:
 		return len_;
 	}
 	void lept_set_string(const char*s, size_t len);
+	//=====================================
+	//=====================================
+	//tutorial05
+	size_t lept_get_array_size() {
+		assert(this != nullptr && type_ == LEPT_ARRAY);
+		return size_;
+	}
+
+	lept_value* lept_get_array_element(size_t index);
 	//=====================================
 	//=====================================
 	//修改/获得private变量接口

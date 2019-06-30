@@ -353,3 +353,11 @@ void lept_value::lept_set_number(T&& n) {
 	n_ = n;
 	type_ = LEPT_NUMBER;
 }
+
+lept_value* lept_value::lept_get_array_element(size_t index) {
+	assert(this != nullptr&& type_ == LEPT_ARRAY);
+	assert(index < size_);
+	auto tmp = this;
+	while (index--)tmp = tmp->e_;
+	return tmp;
+}
