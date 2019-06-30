@@ -105,11 +105,11 @@ namespace {
 		return LEPT_PARSE_OK;
 
 	}
-#define STRING_ERROR(ret) \
-	do { \
-		c->top_ = head;\
-		return ret;\
-	 } while(0)
+	#define STRING_ERROR(ret) \
+		do { \
+			c->top_ = head;\
+			return ret;\
+		} while(0)
 
 	int lept_parse_string(lept_context* c, lept_value* v) {
 		size_t head = c->top_, len;
@@ -210,9 +210,10 @@ namespace {
 			v->set_e(nullptr);
 			return LEPT_PARSE_OK;
 		}
-
 		int res;
 		for (;;) {
+			c->lept_parse_whitespace();
+			/* 相当于new一个lept_value */
 			auto e=(lept_value*)c->lept_context_push(sizeof(lept_value));
 			/*  类内使用{LEPT_NULL}初始化  */
 			if ((res = lept_parse_value(c, e))!=LEPT_PARSE_OK) {
@@ -220,6 +221,7 @@ namespace {
 			}
 			//memcpy(c->lept_context_push(sizeof(lept_value)), &e, sizeof(lept_value));
 			size++;
+			c->lept_parse_whitespace();
 			if (*c->json_ == ',') {
 				c->json_++;
 			}
@@ -232,6 +234,7 @@ namespace {
 				return LEPT_PARSE_OK;
 			}
 			else {
+				c->lept_context_pop(sizeof(lept_value));
 				return LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
 			}
 		}
@@ -396,7 +399,5 @@ void lept_value::lept_set_number(T&& n) {
 lept_value* lept_value::lept_get_array_element(size_t index) {
 	assert(this != nullptr&& type_ == LEPT_ARRAY);
 	assert(index < size_);
-	auto tmp = this;
-	while (index--)tmp = tmp->e_;
-	return tmp;
+	return &e_[index];
 }

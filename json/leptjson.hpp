@@ -94,12 +94,14 @@ public:
 	//=====================================
 	//=====================================
 	//tutorial05
+	lept_value* lept_get_array_element(size_t index);
+
+
 	size_t lept_get_array_size() const{
 		assert(this != nullptr && type_ == LEPT_ARRAY);
 		return size_;
 	}
 
-	lept_value* lept_get_array_element(size_t index);
 	//=====================================
 	//=====================================
 	//修改/获得private变量接口
