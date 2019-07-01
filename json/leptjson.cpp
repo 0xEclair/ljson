@@ -368,9 +368,10 @@ void lept_value::lept_free() {
 		delete[] s_;
 	}
 	if (type_ == LEPT_ARRAY) {
-		for (size_t i = 0; i != size_; ++i) {
+		for (size_t i = 0; i < size_;++i) {
 			lept_get_array_element(i)->lept_free();
 		}
+		delete[] e_;
 	}
 	type_ = LEPT_NULL;
 }
