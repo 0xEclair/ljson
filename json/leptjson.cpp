@@ -212,7 +212,6 @@ namespace {
 		}
 		int res;
 		for (;;) {
-			c->lept_parse_whitespace();
 			/* 相当于new一个lept_value */
 			auto e=(lept_value*)c->lept_context_push(sizeof(lept_value));
 			/*  类内使用{LEPT_NULL}初始化  */
@@ -224,13 +223,14 @@ namespace {
 			c->lept_parse_whitespace();
 			if (*c->json_ == ',') {
 				c->json_++;
+				c->lept_parse_whitespace();
 			}
 			else if (*c->json_ == ']') {
 				c->json_++;
 				v->set_type(LEPT_ARRAY);
 				v->set_size(size);
 				size *= sizeof(lept_value);
-				memcpy((v->e_ = new lept_value), c->lept_context_pop(size), size);
+				memcpy((v->e_ = new lept_value[size/sizeof(lept_value)]), c->lept_context_pop(size), size);
 				return LEPT_PARSE_OK;
 			}
 			else {

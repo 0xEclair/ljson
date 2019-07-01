@@ -321,7 +321,7 @@ static void test_parse() {
 }
 
 int main(void) {
-	_CrtSetBreakAlloc(163);
+	//_CrtSetBreakAlloc(163);
 #ifdef _WINDOWS
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
@@ -336,4 +336,4 @@ int main(void) {
 	_CrtDumpMemoryLeaks();
 
 	return main_ret;
-}
+}s
