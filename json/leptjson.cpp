@@ -230,6 +230,7 @@ namespace {
 				v->set_type(LEPT_ARRAY);
 				v->set_size(size);
 				size *= sizeof(lept_value);
+				printf("%d\n", size);
 				memcpy((v->e_ = new lept_value[size/sizeof(lept_value)]), c->lept_context_pop(size), size);
 				return LEPT_PARSE_OK;
 			}
@@ -361,6 +362,19 @@ double lept::lept_value::lept_get_number() const{
 
 //==========================================================================================================
 //tutorial03
+void lept_value::lept_free() {
+	assert(this != nullptr);
+	if (type_ == LEPT_STRING) {
+		delete[] s_;
+	}
+	if (type_ == LEPT_ARRAY) {
+		for (size_t i = 0; i != size_; ++i) {
+			lept_get_array_element(i)->lept_free();
+		}
+	}
+	type_ = LEPT_NULL;
+}
+
 void lept_value::lept_set_string(const char* s, size_t len) {
 	assert(this != nullptr && (s != nullptr || len == 0));
 	lept_free();
@@ -369,14 +383,6 @@ void lept_value::lept_set_string(const char* s, size_t len) {
 	s_[len] = '\0';
 	len_ = len;
 	set_type(LEPT_STRING);
-}
-
-void lept_value::lept_free() {
-	assert(this != nullptr);
-	if (type_ == LEPT_STRING) {
-		delete[] s_;
-	}
-	type_ = LEPT_NULL;
 }
 
 int lept_value::lept_get_boolean()const {
