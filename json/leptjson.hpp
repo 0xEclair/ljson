@@ -56,14 +56,19 @@ class lept::lept_value {
 			/* data */
 		};
 		struct {
-
+			lept_value* e_;
 			size_t size_;
 		};
 		double n_;			//8
 	};
 	lept_type type_{ LEPT_NULL };		//4->8
+
 public:
-	lept_value* e_;
+
+	//
+	//(lept_value*)& get_e() {
+	//	return &e_;
+	//}
 	//=====================================
 	//=====================================
 	//tutorial01
