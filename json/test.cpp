@@ -9,7 +9,7 @@
 #include <string>
 #include "leptjson.hpp"
 #include <iostream>
-using namespace lept;
+using namespace leptjson;
 static int main_ret = 0;
 static int test_count = 0;
 static int test_pass = 0;

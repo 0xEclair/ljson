@@ -36,9 +36,10 @@
 #include <iostream>
 class A {
 	union {
-		struct {
-			char* c;
-		};
+
+	};
+	struct {
+		char* c;
 	};
 };
 void fun(A* tmp) {

@@ -14,7 +14,7 @@
 /* c++中size_t是 unsigned long long  */	
 #define size_t unsigned int
 
-namespace lept {
+namespace leptjson {
 	enum lept_type {
 		LEPT_NULL,
 		LEPT_FALSE,
@@ -46,7 +46,7 @@ namespace lept {
 //==============================
 //=== class
 //=== lept_value 
-class lept::lept_value {
+class leptjson::lept_value {
 	//8bit对齐
 	union {	// --------------12->16
 		struct
@@ -64,11 +64,10 @@ class lept::lept_value {
 	lept_type type_{ LEPT_NULL };		//4->8
 
 public:
+	lept_value*& lept_get_e() {
+		return e_;
+	}
 
-	//
-	//(lept_value*)& get_e() {
-	//	return &e_;
-	//}
 	//=====================================
 	//=====================================
 	//tutorial01
@@ -130,7 +129,7 @@ public:
 //==============================
 //=== class
 //=== lept_context 
-class lept::lept_context {
+class leptjson::lept_context {
 public:
 	const char* json_;		//8
 	// 动态堆栈
@@ -153,7 +152,7 @@ public:
 };
 
 namespace {
-	using namespace lept;
+	using namespace leptjson;
 
 	int lept_parse_literal(lept_context* c, lept_value* v, const char* literal, lept_type&& type);
 	int lept_parse_number(lept_context* c, lept_value* v);

@@ -231,7 +231,7 @@ namespace {
 				v->set_size(size);
 				size *= sizeof(lept_value);
 				printf("%d\n", size);
-				memcpy((v->e_ = new lept_value[size/sizeof(lept_value)]), c->lept_context_pop(size), size);
+				memcpy((v->lept_get_e()= new lept_value[size/sizeof(lept_value)]), c->lept_context_pop(size), size);
 				return LEPT_PARSE_OK;
 			}
 			else {
@@ -355,7 +355,7 @@ lept_type lept_value::lept_get_type() {
 
 //==========================================================================================================
 //tutorial02
-double lept::lept_value::lept_get_number() const{
+double leptjson::lept_value::lept_get_number() const{
 	assert(this != nullptr && type_ == LEPT_NUMBER);
 	return n_;
 }
