@@ -36,21 +36,48 @@
 #include <iostream>
 class A {
 	union {
+		struct {
+			char* c;
+		};
+	};
 
-	};
-	struct {
-		char* c;
-	};
 };
 void fun(A* tmp) {
 		//like this,note me can't access,but have no error
 		tmp->c = new char('a');
 }
 
+static union a{	// --------------12->16
+	struct
+	{
+		/* data */
+		int s_;		//8
+		unsigned int len_;	//4->8
+	};
+	struct {
+		int e_;
+		unsigned int size_;
+	};
+	struct {
+		int* m;
+		unsigned int size_;
+	};
+};
+
 int main(void) {
 
 	A t;
 	fun(&t);
-	std::cout << t.c;
+	//std::cout << t.c<<std::endl;
+
+	a b;
+	std::cout << std::endl;
+	b.m = new int(0x01020304);
+	b.size_ = 0x05050505;
+	std::cout << &b << std::endl;
+	std::cout << sizeof(b) << std::endl;
+	std::cout << &*b.m << std::endl;
+	std::cout << b.size_ << std::endl;
+	delete b.m;
 	return 0;
 }
