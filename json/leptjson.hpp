@@ -51,9 +51,9 @@ class leptjson::lept_value {
 	union {	// --------------12->16
 		struct
 		{
+			/* data */
 			char* s_;		//8
 			size_t len_;	//4->8
-			/* data */
 		};
 		struct {
 			lept_value* e_;
