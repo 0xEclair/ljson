@@ -36,11 +36,16 @@ namespace leptjson {
 		LEPT_PARSE_INVALID_STRING_CHAR,
 		LEPT_PARSE_INVALID_UNICODE_HEX,
 		LEPT_PARSE_INVALID_UNICODE_SURROGATE,
-		LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET
+		LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET,
+		LEPT_PARSE_MISS_KEY,
+		LEPT_PARSE_MISS_COLON,
+		LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET
 	};
 	class lept_value;
 
 	class lept_context;
+
+	class lept_member;
 }
 
 //==============================
@@ -59,6 +64,10 @@ class leptjson::lept_value {
 			lept_value* e_;
 			size_t size_;
 		};
+		struct {
+			lept_member* m;
+			size_t size_;
+		};
 		double n_;			//8
 	};
 	lept_type type_{ LEPT_NULL };		//4->8
@@ -67,7 +76,6 @@ public:
 	lept_value*& lept_get_e() {
 		return e_;
 	}
-
 	//=====================================
 	//=====================================
 	//tutorial01
@@ -105,6 +113,16 @@ public:
 		assert(this != nullptr && type_ == LEPT_ARRAY);
 		return size_;
 	}
+
+	//=====================================
+	//=====================================
+	//tutorial06
+	size_t lept_get_object_size() {
+		return size_;
+	}
+	const char* lept_get_object_key( size_t index);
+	size_t lept_get_object_key_length(size_t index);
+	lept_value* lept_get_object_value(size_t index);
 
 	//=====================================
 	//=====================================
@@ -151,13 +169,30 @@ public:
 	void lept_encode_utf8(const unsigned& u);
 };
 
+//==============================
+//=== class
+//=== lept_member 
+class leptjson::lept_member {
+	char* k;				/* member key string */
+	size_t klen;			/* key string length */
+	lept_value v;			/* member value		 */
+
+public:
+
+};
+
 namespace {
 	using namespace leptjson;
 
 	int lept_parse_literal(lept_context* c, lept_value* v, const char* literal, lept_type&& type);
 	int lept_parse_number(lept_context* c, lept_value* v);
-	int lept_parse_string(lept_context* c, lept_value* v);
+
+	//refactor ---> int lept_parse_string(lept_context* c, lept_value* v);
 	int lept_parse_value(lept_context* c, lept_value* v);
 	const char* lept_parse_hex4(const char* p, unsigned& u);
 	int lept_parse_array(lept_context* c, lept_value* v);
+
+	//tutorial06
+	int lept_parse_string_raw(lept_context* c, char** str, size_t* len);
+	int lept_parse_string(lept_context* c, lept_value* v);
 }
