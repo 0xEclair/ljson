@@ -32,7 +32,25 @@
 //	point(a);
 //	cout << a << endl;
 //	return 0;
+
 //}
+static union a {	// --------------12->16
+	struct
+	{
+		/* data */
+		int s_;		//8
+		size_t len_;	//4->8
+	};
+	struct {
+		int e_;
+		size_t size_;
+	};
+	struct {
+		int* m;
+		size_t size_;
+	};
+};
+
 #include <iostream>
 class A {
 	union {
@@ -44,40 +62,25 @@ class A {
 };
 void fun(A* tmp) {
 		//like this,note me can't access,but have no error
-		tmp->c = new char('a');
+		tmp->c = new char('c');
 }
 
-static union a{	// --------------12->16
-	struct
-	{
-		/* data */
-		int s_;		//8
-		unsigned int len_;	//4->8
-	};
-	struct {
-		int e_;
-		unsigned int size_;
-	};
-	struct {
-		int* m;
-		unsigned int size_;
-	};
-};
-
 int main(void) {
-
 	A t;
 	fun(&t);
 	//std::cout << t.c<<std::endl;
+	delete t.c;
 
 	a b;
-	std::cout << std::endl;
-	b.m = new int(0x01020304);
+	b.m = new int(1321);
 	b.size_ = 0x05050505;
 	std::cout << &b << std::endl;
 	std::cout << sizeof(b) << std::endl;
 	std::cout << &*b.m << std::endl;
 	std::cout << b.size_ << std::endl;
 	delete b.m;
+
+
+	_CrtDumpMemoryLeaks();
 	return 0;
 }
