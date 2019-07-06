@@ -84,7 +84,7 @@ public:
 	//=====================================
 	//tutorial01
 	int lept_parse(const char*json);
-	lept_type lept_get_type();
+	lept_type lept_get_type()const;
 
 	//=====================================
 	//=====================================
@@ -130,7 +130,12 @@ public:
 
 	//=====================================
 	//=====================================
-	//修改/获得private变量接口
+	//tutorial07
+	char* lept_stringify(size_t* length);
+
+	//=====================================
+	//=====================================
+	// 修改/获得private变量接口
 	// 设置type_
 	template <typename T>
 	void set_type(T&& t) {
@@ -198,4 +203,8 @@ namespace {
 	int lept_parse_string_raw(lept_context* c, char** str, size_t* len);
 	int lept_parse_string(lept_context* c, lept_value* v);
 	int lept_parse_object(lept_context* c, lept_value* v);
+
+	//tutorial07
+	void lept_stringify_value(lept_context* c, const lept_value* v);
+	void lept_stringify_string(lept_context* c, const char* s, size_t len);
 }
