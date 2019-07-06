@@ -65,7 +65,7 @@ class leptjson::lept_value {
 			size_t size_;
 		};
 		struct {
-			lept_member* m;
+			lept_member* m_;
 			size_t size_;
 		};
 		double n_;			//8
@@ -75,6 +75,10 @@ class leptjson::lept_value {
 public:
 	lept_value*& lept_get_e() {
 		return e_;
+	}
+
+	lept_member*& lept_get_m() {
+		return m_;
 	}
 	//=====================================
 	//=====================================
@@ -173,12 +177,10 @@ public:
 //=== class
 //=== lept_member 
 class leptjson::lept_member {
+public:
 	char* k;				/* member key string */
 	size_t klen;			/* key string length */
 	lept_value v;			/* member value		 */
-
-public:
-
 };
 
 namespace {
@@ -195,4 +197,5 @@ namespace {
 	//tutorial06
 	int lept_parse_string_raw(lept_context* c, char** str, size_t* len);
 	int lept_parse_string(lept_context* c, lept_value* v);
+	int lept_parse_object(lept_context* c, lept_value* v);
 }

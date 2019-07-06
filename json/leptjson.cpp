@@ -4,8 +4,6 @@
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
-
-using std::string;
 //=======================================================
 //toturial01
 #define EXPECT(c,ch) \
@@ -27,7 +25,7 @@ using std::string;
 	}while(0)
 
 #ifndef LEPT_PARSE_STACK_INIT_SIZE
-#define LEPT_PARSE_STACK_INTI_SIZE 256
+#define LEPT_PARSE_STACK_INTI_SIZE 512
 #endif
 
 #define PUTC(c,ch) \
@@ -105,10 +103,10 @@ namespace {
 		return LEPT_PARSE_OK;
 
 	}
-	#define STRING_ERROR(ret) \
+	#define STRING_ERROR(res) \
 		do { \
 			c->top_ = head;\
-			return ret;\
+			return res;\
 		} while(0)
 
 /*
@@ -180,6 +178,7 @@ namespace {
 		default:  return lept_parse_number(c, v);
 		case '"':  return lept_parse_string(c, v);
 		case '[':return lept_parse_array(c, v);
+		case '{':return lept_parse_object(c, v);
 		case '\0':return LEPT_PARSE_EXPECT_VALUE;
 		}
 	}
@@ -232,7 +231,6 @@ namespace {
 				v->set_type(LEPT_ARRAY);
 				v->set_size(size);
 				size *= sizeof(lept_value);
-				printf("%d\n", size);
 				memcpy((v->lept_get_e()= new lept_value[size/sizeof(lept_value)]), c->lept_context_pop(size), size);
 				return LEPT_PARSE_OK;
 			}
@@ -308,6 +306,83 @@ namespace {
 			}
 		}
 		return 0;
+	}
+
+	int lept_parse_object(lept_context* c, lept_value* v) {
+		size_t size;
+		lept_member m;
+		int res;
+		c->lept_parse_whitespace();
+		EXPECT(c, '{');
+		c->lept_parse_whitespace();
+		if (*c->json_ == '}') {
+			c->json_++;
+			v->set_type(LEPT_OBJECT);
+			v->lept_get_m() = nullptr;
+			v->set_size(0);
+			return LEPT_PARSE_OK;
+		}
+		m.k = nullptr;
+		size = 0;
+		for (;;) {
+			m.v.set_type(LEPT_NULL);
+			/* \todo parse key to m.k, m.klen */
+			c->lept_parse_whitespace();
+			if (*c->json_ != '\"') {
+				if (m.k != nullptr) {
+					delete[] m.k;
+				}
+				c->lept_context_pop(size * sizeof(lept_member));
+				return LEPT_PARSE_MISS_KEY;
+			}
+			/* parse k and klen */
+			char* s;
+			if (lept_parse_string_raw(c, &s, &m.klen) == LEPT_PARSE_OK) {
+				m.k = new char[m.klen+1];
+				memcpy(m.k, s, m.klen);
+				m.k[m.klen] = '\0';
+				//len_ = len;
+			}
+			/* \todo parse ws colon ws */
+			c->lept_parse_whitespace();
+			if (*c->json_++ != ':') {
+				if (m.k != nullptr)	delete[] m.k;
+				c->lept_context_pop(size * sizeof(lept_member));
+				return LEPT_PARSE_MISS_COLON;
+			}
+			c->lept_parse_whitespace();
+			/* parse value */
+			if ((res = lept_parse_value(c, &m.v)) != LEPT_PARSE_OK) {
+				c->lept_context_pop(size * sizeof(lept_member));
+				break;
+			}
+			memcpy(c->lept_context_push(sizeof(lept_member)), &m, sizeof(lept_member));
+			size++;
+			//m.k = nullptr;/* ownership is transferred to member on stack */
+        /* \todo parse ws [comma | right-curly-brace] ws */
+			c->lept_parse_whitespace();
+			if (*c->json_ == ',') { 
+				c->json_++;
+				continue;
+			}
+			else if(*c->json_=='}'){
+				c->json_++;
+				v->set_type(LEPT_OBJECT);
+				v->set_size(size);
+				size *= sizeof(lept_member);
+				printf("%d\n", size);
+				memcpy(v->lept_get_m() = new lept_member[size / sizeof(lept_member)], c->lept_context_pop(size), size);
+				return LEPT_PARSE_OK;
+			}
+			else {
+				if (m.k != nullptr)	delete[] m.k;
+				c->lept_context_pop(size * sizeof(lept_member));
+				res = LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET;
+				break;
+			}
+		}
+		/* \todo Pop and free members on the stack */
+		return res;
 	}
 }
 
@@ -435,11 +510,18 @@ void lept_value::lept_free() {
 	if (type_ == LEPT_STRING) {
 		delete[] s_;
 	}
-	if (type_ == LEPT_ARRAY) {
+	else if (type_ == LEPT_ARRAY) {
 		for (size_t i = 0; i < size_;++i) {
 			lept_get_array_element(i)->lept_free();
 		}
 		delete[] e_;
+	}
+	else if (type_ == LEPT_OBJECT) {
+		for (size_t i = 0; i < size_; ++i) {
+			delete[] lept_get_object_key(i);
+			lept_get_object_value(i)->lept_free();
+		}
+		delete[] m_;
 	}
 	type_ = LEPT_NULL;
 }
@@ -475,4 +557,24 @@ lept_value* lept_value::lept_get_array_element(size_t index) {
 	assert(this != nullptr&& type_ == LEPT_ARRAY);
 	assert(index < size_);
 	return &e_[index];
+}
+
+//==========================================================================================================
+//tutorial06
+const char* lept_value::lept_get_object_key(size_t index) {
+	assert(this != nullptr && type_ == LEPT_OBJECT);
+	assert(index < size_);
+	return m_[index].k;
+}
+
+size_t lept_value::lept_get_object_key_length(size_t index) {
+	assert(this != nullptr && type_ == LEPT_OBJECT);
+	assert(index < size_);
+	return m_[index].klen;
+}
+
+lept_value* lept_value::lept_get_object_value(size_t index) {
+	assert(this != nullptr && type_ == LEPT_OBJECT);
+	assert(index < size_);
+	return &m_[index].v;
 }

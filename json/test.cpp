@@ -288,6 +288,65 @@ void test_parse_array() {
 	}
 	v.lept_free();
 }
+
+void test_parse_object() {
+	lept_value v;
+	size_t i;
+
+	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse(" { } "));
+	EXPECT_EQ_INT(LEPT_OBJECT, v.lept_get_type());
+	EXPECT_EQ_SIZE_T(0, v.lept_get_object_size());
+	v.lept_free();
+
+	v.set_type(LEPT_NULL);
+	EXPECT_EQ_INT(LEPT_PARSE_OK, v.lept_parse(
+		" { "
+		"\"n\" : null , "
+		"\"f\" : false , "
+		"\"t\" : true , "
+		"\"i\" : 123 , "
+		"\"s\" : \"abc\", "
+		"\"a\" : [ 1, 2, 3 ],"
+		"\"o\" : { \"1\" : 1, \"2\" : 2, \"3\" : 3 }"
+		" } "
+	));
+	EXPECT_EQ_INT(LEPT_OBJECT, v.lept_get_type());
+	EXPECT_EQ_SIZE_T(7, v.lept_get_object_size());
+	EXPECT_EQ_STRING("n", v.lept_get_object_key(0), v.lept_get_object_key_length(0));
+	EXPECT_EQ_INT(LEPT_NULL, v.lept_get_object_value(0)->lept_get_type());
+	EXPECT_EQ_STRING("f", v.lept_get_object_key(1), v.lept_get_object_key_length(1));
+	EXPECT_EQ_INT(LEPT_FALSE, v.lept_get_object_value(1)->lept_get_type());
+	EXPECT_EQ_STRING("t", v.lept_get_object_key(2), v.lept_get_object_key_length(2));
+	EXPECT_EQ_INT(LEPT_TRUE, v.lept_get_object_value(2)->lept_get_type());
+	EXPECT_EQ_STRING("i", v.lept_get_object_key(3), v.lept_get_object_key_length(3));
+	EXPECT_EQ_INT(LEPT_NUMBER, v.lept_get_object_value(3)->lept_get_type());
+	EXPECT_EQ_DOUBLE(123.0, v.lept_get_object_value(3)->lept_get_number());
+	EXPECT_EQ_STRING("s", v.lept_get_object_key(4), v.lept_get_object_key_length(4));
+	EXPECT_EQ_INT(LEPT_STRING, v.lept_get_object_value(4)->lept_get_type());
+	EXPECT_EQ_STRING("abc", v.lept_get_object_value(4)->lept_get_string(), v.lept_get_object_value(4)->lept_get_string_length());
+	EXPECT_EQ_STRING("a", v.lept_get_object_key(5), v.lept_get_object_key_length(5));
+	EXPECT_EQ_INT(LEPT_ARRAY, v.lept_get_object_value(5)->lept_get_type());
+	EXPECT_EQ_SIZE_T(3, v.lept_get_object_value(5)->lept_get_array_size());
+	for (i = 0; i < 3; i++) {
+		lept_value* e = v.lept_get_object_value(5)->lept_get_array_element(i);
+		EXPECT_EQ_INT(LEPT_NUMBER, e->lept_get_type());
+		EXPECT_EQ_DOUBLE(i + 1.0, e->lept_get_number());
+	}
+	EXPECT_EQ_STRING("o", v.lept_get_object_key(6), v.lept_get_object_key_length(6));
+	{
+		lept_value* o = v.lept_get_object_value(6);
+		EXPECT_EQ_INT(LEPT_OBJECT, o->lept_get_type());
+		for (i = 0; i < 3; i++) {
+			lept_value* ov = o->lept_get_object_value(i);
+			EXPECT_TRUE('1' + i == o->lept_get_object_key(i)[0]);
+			EXPECT_EQ_SIZE_T(1, o->lept_get_object_key_length(i));
+			EXPECT_EQ_INT(LEPT_NUMBER, ov->lept_get_type());
+			EXPECT_EQ_DOUBLE(i + 1.0, ov->lept_get_number());
+		}
+	}
+	v.lept_free();
+}
+
 void test_parse_miss_comma_or_square_bracket() {
 #if 1
 	TEST_ERROR(LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET, "[1");
@@ -296,6 +355,29 @@ void test_parse_miss_comma_or_square_bracket() {
 	TEST_ERROR(LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET, "[[]");
 #endif
 }
+
+void test_parse_miss_key() {
+	TEST_ERROR(LEPT_PARSE_MISS_KEY, "{:1,");
+	TEST_ERROR(LEPT_PARSE_MISS_KEY, "{1:1,");
+	TEST_ERROR(LEPT_PARSE_MISS_KEY, "{true:1,");
+	TEST_ERROR(LEPT_PARSE_MISS_KEY, "{false:1,");
+	TEST_ERROR(LEPT_PARSE_MISS_KEY, "{null:1,");
+	TEST_ERROR(LEPT_PARSE_MISS_KEY, "{[]:1,");
+	TEST_ERROR(LEPT_PARSE_MISS_KEY, "{{}:1,");
+	TEST_ERROR(LEPT_PARSE_MISS_KEY, "{\"a\":1,");
+}
+
+void test_parse_miss_colon() {
+	TEST_ERROR(LEPT_PARSE_MISS_COLON, "{\"a\"}");
+	TEST_ERROR(LEPT_PARSE_MISS_COLON, "{\"a\",\"b\"}");
+}
+
+void test_parse_miss_comma_or_curly_bracket() {
+	TEST_ERROR(LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, "{\"a\":1");
+	TEST_ERROR(LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, "{\"a\":1]");
+	TEST_ERROR(LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, "{\"a\":1 \"b\"");
+	TEST_ERROR(LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, "{\"a\":{}");
+}
 static void test_parse() {
 	test_parse_null();
 	test_parse_true();
@@ -303,6 +385,8 @@ static void test_parse() {
 	test_parse_number();
 	test_parse_string();
 	test_parse_array();
+	test_parse_object();
+
 	test_parse_expect_value();
 	test_parse_invalid_value();
 	test_parse_root_not_singular();
@@ -313,6 +397,9 @@ static void test_parse() {
 	test_parse_invalid_unicode_hex();
 	test_parse_invalid_unicode_surrogate();
 	test_parse_miss_comma_or_square_bracket();
+	test_parse_miss_key();
+	test_parse_miss_colon();
+	test_parse_miss_comma_or_curly_bracket();
 
 	test_access_null();
 	test_access_boolean();
@@ -321,10 +408,11 @@ static void test_parse() {
 }
 
 int main(void) {
-	//_CrtSetBreakAlloc(163);
+	//_CrtSetBreakAlloc(229);
 #ifdef _WINDOWS
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+	std::cout << sizeof(lept_member) << std::endl;
 
 	test_parse();
 	printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
@@ -334,6 +422,5 @@ int main(void) {
 	std::cout << sizeof(unsigned) << std::endl;
 
 	_CrtDumpMemoryLeaks();
-
 	return main_ret;
 }
