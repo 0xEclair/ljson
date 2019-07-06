@@ -412,14 +412,13 @@ int main(void) {
 #ifdef _WINDOWS
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-	std::cout << sizeof(lept_member) << std::endl;
 
 	test_parse();
 	printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
 
 	std::cout << sizeof(lept_value) << std::endl;
 	std::cout << sizeof(lept_context) << std::endl;
-	std::cout << sizeof(unsigned) << std::endl;
+	std::cout << sizeof(lept_member) << std::endl;
 
 	_CrtDumpMemoryLeaks();
 	return main_ret;

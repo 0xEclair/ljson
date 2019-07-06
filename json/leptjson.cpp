@@ -33,6 +33,20 @@
 		*(char*)c->lept_context_push(sizeof(char))=(ch);\
 	}while(0)
 
+#define STRING_ERROR(res) \
+		do { \
+			c->top_ = head;\
+			return res;\
+		} while(0)
+
+#define OBJECT_ERROR(res) \
+		do { \
+			if (m.k != nullptr)	delete[] m.k;\
+			m.k=nullptr;\
+			c->top_ = head;\
+			return res;\
+		} while(0)
+
 //匿名命名空间
 //只能在文件内调用
 //暂时只解析符号
@@ -103,11 +117,7 @@ namespace {
 		return LEPT_PARSE_OK;
 
 	}
-	#define STRING_ERROR(res) \
-		do { \
-			c->top_ = head;\
-			return res;\
-		} while(0)
+
 
 /*
 	int lept_parse_string(lept_context* c, lept_value* v) {
@@ -309,7 +319,7 @@ namespace {
 	}
 
 	int lept_parse_object(lept_context* c, lept_value* v) {
-		size_t size;
+		size_t size,head=c->top_;
 		lept_member m;
 		int res;
 		c->lept_parse_whitespace();
@@ -326,14 +336,9 @@ namespace {
 		size = 0;
 		for (;;) {
 			m.v.set_type(LEPT_NULL);
-			/* \todo parse key to m.k, m.klen */
 			c->lept_parse_whitespace();
 			if (*c->json_ != '\"') {
-				if (m.k != nullptr) {
-					delete[] m.k;
-				}
-				c->lept_context_pop(size * sizeof(lept_member));
-				return LEPT_PARSE_MISS_KEY;
+				OBJECT_ERROR(LEPT_PARSE_MISS_KEY);
 			}
 			/* parse k and klen */
 			char* s;
@@ -341,25 +346,17 @@ namespace {
 				m.k = new char[m.klen+1];
 				memcpy(m.k, s, m.klen);
 				m.k[m.klen] = '\0';
-				//len_ = len;
 			}
-			/* \todo parse ws colon ws */
 			c->lept_parse_whitespace();
 			if (*c->json_++ != ':') {
-				if (m.k != nullptr)	delete[] m.k;
-				c->lept_context_pop(size * sizeof(lept_member));
-				return LEPT_PARSE_MISS_COLON;
+				OBJECT_ERROR(LEPT_PARSE_MISS_COLON);
 			}
 			c->lept_parse_whitespace();
-			/* parse value */
 			if ((res = lept_parse_value(c, &m.v)) != LEPT_PARSE_OK) {
-				c->lept_context_pop(size * sizeof(lept_member));
-				break;
+				OBJECT_ERROR(res);
 			}
 			memcpy(c->lept_context_push(sizeof(lept_member)), &m, sizeof(lept_member));
 			size++;
-			//m.k = nullptr;/* ownership is transferred to member on stack */
-        /* \todo parse ws [comma | right-curly-brace] ws */
 			c->lept_parse_whitespace();
 			if (*c->json_ == ',') { 
 				c->json_++;
@@ -370,19 +367,13 @@ namespace {
 				v->set_type(LEPT_OBJECT);
 				v->set_size(size);
 				size *= sizeof(lept_member);
-				printf("%d\n", size);
 				memcpy(v->lept_get_m() = new lept_member[size / sizeof(lept_member)], c->lept_context_pop(size), size);
 				return LEPT_PARSE_OK;
 			}
 			else {
-				if (m.k != nullptr)	delete[] m.k;
-				c->lept_context_pop(size * sizeof(lept_member));
-				res = LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET;
-				break;
+				OBJECT_ERROR(LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET);
 			}
 		}
-		/* \todo Pop and free members on the stack */
-		return res;
 	}
 }
 
