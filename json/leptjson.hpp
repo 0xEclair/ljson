@@ -158,8 +158,6 @@ public:
 	size_t lept_find_object_index(const char* _key, size_t _klen) const;
 	lept_value* lept_find_object_value(const char* _key, size_t _klen) const;
 
-	void lept_set_object_value(const char* _key, size_t _klen, const lept_value* value);
-
 	void lept_set_array(size_t _capacity);
 	size_t lept_get_array_capacity()const {
 		assert(this != nullptr && type_ == LEPT_ARRAY);
@@ -177,7 +175,7 @@ public:
 	void lept_clear_array();
 
 	void lept_set_object(size_t _capacity);
-	const size_t& lept_get_object_capacity();
+	const size_t& lept_get_object_capacity()const;
 	void lept_reserve_object(size_t _capacity);
 	void lept_shrink_object();
 	void lept_clear_object();
@@ -197,10 +195,6 @@ public:
 	template <typename T>
 	void set_size(T&& t) {
 		size_ = t;
-	}
-	template <typename T>
-	void set_e(T&& t) {
-		e_ = t;
 	}
 };
 

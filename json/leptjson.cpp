@@ -4,7 +4,6 @@
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
-#include<iostream>
 //=======================================================
 //toturial01
 #define EXPECT(c,ch) \
@@ -226,7 +225,7 @@ namespace {
 			c->json_++;
 			v->set_type(LEPT_ARRAY);
 			v->set_size(0);
-			v->set_e(nullptr);
+			v->lept_set_e() = nullptr;
 			return LEPT_PARSE_OK;
 		}
 		int res;
@@ -249,7 +248,6 @@ namespace {
 				v->set_type(LEPT_ARRAY);
 				v->set_size(size);
 				size *= sizeof(lept_value);
-				std::cout << size << std::endl;
 				memcpy((v->lept_set_e()= new lept_value[size/sizeof(lept_value)]), c->lept_context_pop(size), size);
 				return LEPT_PARSE_OK;
 			}
@@ -376,7 +374,6 @@ namespace {
 				v->set_type(LEPT_OBJECT);
 				v->set_size(size);
 				size *= sizeof(lept_member);
-				std::cout << size << std::endl;
 				memcpy(v->lept_set_m() = new lept_member[size / sizeof(lept_member)], c->lept_context_pop(size), size);
 				return LEPT_PARSE_OK;
 			}
@@ -681,9 +678,6 @@ lept_value* lept_value::lept_find_object_value(const char* _key, size_t _klen)co
 	return index != LEPT_KEY_NOT_EXIST ? &m_[index].v : nullptr;
 }
 
-void lept_value::lept_set_object_value(const char* _key, size_t _klne, const lept_value* value) {
-
-}
 
 void lept_value::lept_set_array(size_t _capacity) {
 	assert(this != nullptr);
@@ -713,7 +707,7 @@ void lept_value::lept_shrink_array() {
 	if (capacity_ > size_) {
 		capacity_ = size_;
 		auto tmp = e_;
-		e_ = new lept_value[capacity_];
+		e_ = new lept_value[size_];
 		if (tmp != nullptr) {
 			memcpy(e_, tmp, size_*sizeof(lept_value));
 			delete[] tmp;
@@ -758,18 +752,19 @@ void lept_value::lept_clear_array() {
 
 void lept_value::lept_set_object(size_t _capacity) {
 	assert(this != nullptr);
+	lept_free();
 	type_ = LEPT_OBJECT;
 	size_ = 0;
 	capacity_ = _capacity;
 	m_ = _capacity > 0 ? (new lept_member[_capacity]) : nullptr;
 }
 
-const size_t& leptjson::lept_value::lept_get_object_capacity(){
+const size_t& lept_value::lept_get_object_capacity()const{
 	assert(this != nullptr && type_ == LEPT_OBJECT);
 	return capacity_;
 }
 
-void leptjson::lept_value::lept_reserve_object(size_t _capacity){
+void lept_value::lept_reserve_object(size_t _capacity){
 	assert(this != nullptr && type_ == LEPT_OBJECT);
 	if (capacity_ < _capacity) {
 		auto tmp = m_;
@@ -782,7 +777,59 @@ void leptjson::lept_value::lept_reserve_object(size_t _capacity){
 	}
 }
 
+void lept_value::lept_shrink_object(){
+	assert(this!= nullptr&& type_ == LEPT_OBJECT);
+	if (capacity_ > size_) {
+		capacity_ = size_;
+		auto tmp = m_;
+		m_ = new lept_member[size_];
+		if (tmp != nullptr) {
+			memcpy(e_, tmp, size_ * sizeof(lept_member));
+			delete[] tmp;
+		}
+	}
+}
 
+void lept_value::lept_clear_object(){
+	assert(this != nullptr&& type_ == LEPT_OBJECT);
+	for (size_t i = 0; i < size_; ++i) {
+		delete[] m_[i].k;
+		m_[i].klen = 0;
+		m_[i].v.lept_free();
+	}
+	size_ = 0;
+}
+
+lept_value* lept_value::lept_set_object_value(const char * _key, size_t _klen){
+	assert(this != nullptr&& type_ == LEPT_OBJECT);
+	auto key = lept_find_object_index(_key, _klen);
+	if (key == LEPT_KEY_NOT_EXIST) {
+		if (size_ == capacity_) {
+			lept_reserve_object(capacity_ == 0 ? 1 : capacity_ * 2);
+		}
+		m_[size_].k = new char[_klen + 1];
+		memcpy(m_[size_].k, _key, _klen);
+		m_[size_].k[_klen] = '\0';
+		m_[size_].klen = _klen;
+		return &m_[size_++].v;
+	}
+	else {
+		m_[key].v.lept_free();
+		return &m_[key].v;
+	}
+}
+
+void lept_value::lept_remove_object_value(size_t index){
+	assert(this != nullptr&& type_ == LEPT_OBJECT);
+	assert(index < size_);
+	delete[] m_[index].k;
+	m_[index].klen = 0;
+	m_[index].v.lept_free();
+	memcpy(&m_[index], &m_[index + 1], (--size_-index)*sizeof(lept_member));
+	m_[size_].k = nullptr;
+	m_[size_].klen = 0;
+	m_[size_].v.set_type(LEPT_NULL);
+}
 
 //==========================================================================================================
 //==========================================================================================================
@@ -871,13 +918,8 @@ void lept_copy(lept_value* _dst, lept_value* _src) {
 void lept_move(lept_value* _dst, lept_value* _src) {
 	assert(_dst != nullptr && _src != nullptr && _src != _dst);
 	_dst->lept_free();
-	//if (_src->lept_get_type() == LEPT_OBJECT) {
-
-	//}
 	*_dst = std::move(*_src);
-	//memcpy(_dst, _src, sizeof(lept_value));
 	_src->set_type(LEPT_NULL);
-	_src = nullptr;
 }
 
 void lept_swap(lept_value* _lhs, lept_value* _rhs) {

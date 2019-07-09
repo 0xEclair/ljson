@@ -567,7 +567,6 @@ void test_access_array() {
 		lept_move(a.lept_insert_array_element(i), &e);
 		e.lept_free();
 	}
-#endif
 
 	EXPECT_EQ_SIZE_T(8, a.lept_get_array_size());
 	for (i = 0; i < 8; i++)
@@ -592,42 +591,115 @@ void test_access_array() {
 	EXPECT_EQ_SIZE_T(0, a.lept_get_array_capacity());
 
 	a.lept_free();
+#endif
+}
+
+void test_access_object() {
+#if 1
+	lept_value o, v, *pv;
+	size_t i, j, index;
+
+	for (j = 0; j <= 5; j += 5) {
+		o.lept_set_object(j);
+		EXPECT_EQ_SIZE_T(0, o.lept_get_object_size());
+		EXPECT_EQ_SIZE_T(j, o.lept_get_object_capacity());
+		for (i = 0; i < 10; i++) {
+			char key[2] = "a";
+			key[0] += i;
+			v.set_type(LEPT_NULL);
+			v.lept_set_number(i);
+			lept_move(o.lept_set_object_value(key, 1), &v);
+			v.lept_free();
+		}
+		EXPECT_EQ_SIZE_T(10, o.lept_get_object_size());
+		for (i = 0; i < 10; i++) {
+			char key[] = "a";
+			key[0] += i;
+			index = o.lept_find_object_index(key, 1);
+			EXPECT_TRUE(index != (unsigned int)(-1));
+			pv = o.lept_get_object_value(index);
+			EXPECT_EQ_DOUBLE((double)i, pv->lept_get_number());
+		}
+	}
+
+	index = o.lept_find_object_index("j", 1);
+	EXPECT_TRUE(index != (unsigned int)(-1));
+	o.lept_remove_object_value(index);
+	index = o.lept_find_object_index("j", 1);
+	EXPECT_TRUE(index == (unsigned int)(-1));
+	EXPECT_EQ_SIZE_T(9, o.lept_get_object_size());
+
+	index = o.lept_find_object_index("a", 1);
+	EXPECT_TRUE(index != (unsigned int)(-1));
+	o.lept_remove_object_value(index);
+	index = o.lept_find_object_index("a", 1);
+	EXPECT_TRUE(index == (unsigned int)(-1));
+	EXPECT_EQ_SIZE_T(8, o.lept_get_object_size());
+
+	EXPECT_TRUE(o.lept_get_object_capacity() > 8);
+	o.lept_shrink_object();
+	EXPECT_EQ_SIZE_T(8, o.lept_get_object_capacity());
+	EXPECT_EQ_SIZE_T(8, o.lept_get_object_size());
+	for (i = 0; i < 8; i++) {
+		char key[] = "a";
+		key[0] += i + 1;
+		EXPECT_EQ_DOUBLE((double)i + 1, o.lept_get_object_value(o.lept_find_object_index(key, 1))->lept_get_number());
+	}
+
+	v.lept_set_string("Hello", 5);
+	lept_move(o.lept_set_object_value("World", 5), &v); /* Test if element is freed */
+	v.lept_free();
+
+	pv = o.lept_find_object_value("World", 5);
+	EXPECT_TRUE(pv != nullptr);
+	EXPECT_EQ_STRING("Hello", pv->lept_get_string(), pv->lept_get_string_length());
+
+	i = o.lept_get_object_capacity();
+	o.lept_clear_object();
+	EXPECT_EQ_SIZE_T(0, o.lept_get_object_size());
+	EXPECT_EQ_SIZE_T(i, o.lept_get_object_capacity()); /* capacity remains unchanged */
+	o.lept_shrink_object();
+	EXPECT_EQ_SIZE_T(0, o.lept_get_object_capacity());
+
+	o.lept_free();
+#endif
 }
 
 static void test_parse() {
-	//test_parse_null();
-	//test_parse_true();
-	//test_parse_false();
-	//test_parse_number();
-	//test_parse_string();
-	//test_parse_array();
-	//test_parse_object();
+	test_parse_null();
+	test_parse_true();
+	test_parse_false();
+	test_parse_number();
+	test_parse_string();
+	test_parse_array();
+	test_parse_object();
 
-	//test_parse_expect_value();
-	//test_parse_invalid_value();
-	//test_parse_root_not_singular();
-	//test_parse_number_too_big();
-	//test_parse_missing_quotation_mark();
-	//test_parse_invalid_string_escape();
-	//test_parse_invalid_string_char();
-	//test_parse_invalid_unicode_hex();
-	//test_parse_invalid_unicode_surrogate();
-	//test_parse_miss_comma_or_square_bracket();
-	//test_parse_miss_key();
-	//test_parse_miss_colon();
-	//test_parse_miss_comma_or_curly_bracket();
+	test_parse_expect_value();
+	test_parse_invalid_value();
+	test_parse_root_not_singular();
+	test_parse_number_too_big();
+	test_parse_missing_quotation_mark();
+	test_parse_invalid_string_escape();
+	test_parse_invalid_string_char();
+	test_parse_invalid_unicode_hex();
+	test_parse_invalid_unicode_surrogate();
+	test_parse_miss_comma_or_square_bracket();
+	test_parse_miss_key();
+	test_parse_miss_colon();
+	test_parse_miss_comma_or_curly_bracket();
 
-	//test_access_null();
-	//test_access_boolean();
-	//test_access_number();
-	//test_access_string();
-	//test_access_array();
+	test_access_null();
+	test_access_boolean();
+	test_access_number();
+	test_access_string();
+	test_access_array();
+	test_access_object();
 
-	//test_stringify();
-	//test_equal();
-	//test_copy();
-	//test_move();
-	//test_swap();
+	test_stringify();
+	test_equal();
+	test_copy();
+	test_move();
+	test_swap();
 
 	const char* json = "{\"a\":[1,2],\"b\":3}";
 	char *out;
@@ -657,7 +729,7 @@ static void test_parse() {
 }
 
 int main(void) {
-	//_CrtSetBreakAlloc(156);
+	//_CrtSetBreakAlloc(212);
 #ifdef _WINDOWS
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
