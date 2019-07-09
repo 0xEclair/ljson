@@ -175,6 +175,15 @@ public:
 	lept_value* lept_insert_array_element(size_t index);
 	void lept_erase_array_element(size_t index, size_t count);
 	void lept_clear_array();
+
+	void lept_set_object(size_t _capacity);
+	const size_t& lept_get_object_capacity();
+	void lept_reserve_object(size_t _capacity);
+	void lept_shrink_object();
+	void lept_clear_object();
+	lept_value* lept_set_object_value(const char* _key, size_t _klen);
+	void lept_remove_object_value(size_t index);
+
 	//=====================================
 	//=====================================
 	// 修改/获得private变量接口

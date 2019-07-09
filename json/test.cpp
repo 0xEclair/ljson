@@ -595,39 +595,39 @@ void test_access_array() {
 }
 
 static void test_parse() {
-	test_parse_null();
-	test_parse_true();
-	test_parse_false();
-	test_parse_number();
-	test_parse_string();
-	test_parse_array();
-	test_parse_object();
+	//test_parse_null();
+	//test_parse_true();
+	//test_parse_false();
+	//test_parse_number();
+	//test_parse_string();
+	//test_parse_array();
+	//test_parse_object();
 
-	test_parse_expect_value();
-	test_parse_invalid_value();
-	test_parse_root_not_singular();
-	test_parse_number_too_big();
-	test_parse_missing_quotation_mark();
-	test_parse_invalid_string_escape();
-	test_parse_invalid_string_char();
-	test_parse_invalid_unicode_hex();
-	test_parse_invalid_unicode_surrogate();
-	test_parse_miss_comma_or_square_bracket();
-	test_parse_miss_key();
-	test_parse_miss_colon();
-	test_parse_miss_comma_or_curly_bracket();
+	//test_parse_expect_value();
+	//test_parse_invalid_value();
+	//test_parse_root_not_singular();
+	//test_parse_number_too_big();
+	//test_parse_missing_quotation_mark();
+	//test_parse_invalid_string_escape();
+	//test_parse_invalid_string_char();
+	//test_parse_invalid_unicode_hex();
+	//test_parse_invalid_unicode_surrogate();
+	//test_parse_miss_comma_or_square_bracket();
+	//test_parse_miss_key();
+	//test_parse_miss_colon();
+	//test_parse_miss_comma_or_curly_bracket();
 
-	test_access_null();
-	test_access_boolean();
-	test_access_number();
-	test_access_string();
-	test_access_array();
+	//test_access_null();
+	//test_access_boolean();
+	//test_access_number();
+	//test_access_string();
+	//test_access_array();
 
-	test_stringify();
-	test_equal();
-	test_copy();
-	test_move();
-	test_swap();
+	//test_stringify();
+	//test_equal();
+	//test_copy();
+	//test_move();
+	//test_swap();
 
 	const char* json = "{\"a\":[1,2],\"b\":3}";
 	char *out;
@@ -657,7 +657,7 @@ static void test_parse() {
 }
 
 int main(void) {
-	//_CrtSetBreakAlloc(229);
+	//_CrtSetBreakAlloc(156);
 #ifdef _WINDOWS
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif

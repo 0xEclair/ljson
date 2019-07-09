@@ -4,6 +4,7 @@
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
+#include<iostream>
 //=======================================================
 //toturial01
 #define EXPECT(c,ch) \
@@ -248,6 +249,7 @@ namespace {
 				v->set_type(LEPT_ARRAY);
 				v->set_size(size);
 				size *= sizeof(lept_value);
+				std::cout << size << std::endl;
 				memcpy((v->lept_set_e()= new lept_value[size/sizeof(lept_value)]), c->lept_context_pop(size), size);
 				return LEPT_PARSE_OK;
 			}
@@ -374,6 +376,7 @@ namespace {
 				v->set_type(LEPT_OBJECT);
 				v->set_size(size);
 				size *= sizeof(lept_member);
+				std::cout << size << std::endl;
 				memcpy(v->lept_set_m() = new lept_member[size / sizeof(lept_member)], c->lept_context_pop(size), size);
 				return LEPT_PARSE_OK;
 			}
@@ -533,6 +536,7 @@ void lept_context::lept_encode_utf8(const unsigned& u) {
 int lept_value::lept_parse(const char* json) {
 	lept_context c;
 	assert(this != nullptr);
+	lept_free();
 	c.json_ = json;
 	c.stack_ = nullptr;
 	c.size_ = c.top_ = 0;
@@ -687,7 +691,7 @@ void lept_value::lept_set_array(size_t _capacity) {
 	type_ = LEPT_ARRAY;
 	size_ = 0;
 	capacity_ = _capacity;
-	e_ = _capacity > 0 ? (new lept_value[_capacity * sizeof(lept_value)]) : nullptr;
+	e_ = _capacity > 0 ? (new lept_value[_capacity]) : nullptr;
 }
 
 void lept_value::lept_reserve_array(size_t _capacity) {
@@ -695,7 +699,7 @@ void lept_value::lept_reserve_array(size_t _capacity) {
 	if (capacity_ < _capacity) {
 		/* realloc() */
 		auto tmp = e_;
-		e_ = new lept_value[_capacity*sizeof(lept_value)];
+		e_ = new lept_value[_capacity];
 		if (tmp != nullptr) {
 			memcpy(e_, tmp, capacity_*sizeof(lept_value));
 			delete[] tmp;
@@ -751,6 +755,34 @@ void lept_value::lept_clear_array() {
 	}
 	size_ = 0;
 }
+
+void lept_value::lept_set_object(size_t _capacity) {
+	assert(this != nullptr);
+	type_ = LEPT_OBJECT;
+	size_ = 0;
+	capacity_ = _capacity;
+	m_ = _capacity > 0 ? (new lept_member[_capacity]) : nullptr;
+}
+
+const size_t& leptjson::lept_value::lept_get_object_capacity(){
+	assert(this != nullptr && type_ == LEPT_OBJECT);
+	return capacity_;
+}
+
+void leptjson::lept_value::lept_reserve_object(size_t _capacity){
+	assert(this != nullptr && type_ == LEPT_OBJECT);
+	if (capacity_ < _capacity) {
+		auto tmp = m_;
+		m_ = new lept_member[_capacity];
+		if (tmp != nullptr) {
+			memcpy(e_, tmp, capacity_ * sizeof(lept_member));
+			delete[] tmp;
+		}
+		capacity_ = _capacity;
+	}
+}
+
+
 
 //==========================================================================================================
 //==========================================================================================================
@@ -839,8 +871,13 @@ void lept_copy(lept_value* _dst, lept_value* _src) {
 void lept_move(lept_value* _dst, lept_value* _src) {
 	assert(_dst != nullptr && _src != nullptr && _src != _dst);
 	_dst->lept_free();
+	//if (_src->lept_get_type() == LEPT_OBJECT) {
+
+	//}
 	*_dst = std::move(*_src);
+	//memcpy(_dst, _src, sizeof(lept_value));
 	_src->set_type(LEPT_NULL);
+	_src = nullptr;
 }
 
 void lept_swap(lept_value* _lhs, lept_value* _rhs) {
