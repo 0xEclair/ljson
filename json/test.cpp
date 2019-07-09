@@ -378,34 +378,7 @@ void test_parse_miss_comma_or_curly_bracket() {
 	TEST_ERROR(LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, "{\"a\":1 \"b\"");
 	TEST_ERROR(LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, "{\"a\":{}");
 }
-static void test_parse() {
-	test_parse_null();
-	test_parse_true();
-	test_parse_false();
-	test_parse_number();
-	test_parse_string();
-	test_parse_array();
-	test_parse_object();
 
-	test_parse_expect_value();
-	test_parse_invalid_value();
-	test_parse_root_not_singular();
-	test_parse_number_too_big();
-	test_parse_missing_quotation_mark();
-	test_parse_invalid_string_escape();
-	test_parse_invalid_string_char();
-	test_parse_invalid_unicode_hex();
-	test_parse_invalid_unicode_surrogate();
-	test_parse_miss_comma_or_square_bracket();
-	test_parse_miss_key();
-	test_parse_miss_colon();
-	test_parse_miss_comma_or_curly_bracket();
-
-	test_access_null();
-	test_access_boolean();
-	test_access_number();
-	test_access_string();
-}
 
 #define TEST_ROUNDTRIP(json)\
     do {\
@@ -468,6 +441,219 @@ void test_stringify() {
 	test_stringify_string();
 	test_stringify_array();
 	test_stringify_object();
+
+	lept_value o, *v;
+	size_t index;
+	o.lept_parse("{\"name\":\"Milo\", \"gender\":\"C\"}");
+	if ((v = o.lept_find_object_value("gender", 6))!=nullptr) {
+		printf("%s\n", v->lept_get_string());
+	}
+	o.lept_free();
+}
+
+#define TEST_EQUAL(json1, json2, equality) \
+    do {\
+        lept_value v1, v2;\
+        EXPECT_EQ_INT(LEPT_PARSE_OK, v1.lept_parse(json1));\
+        EXPECT_EQ_INT(LEPT_PARSE_OK, v2.lept_parse(json2));\
+        EXPECT_EQ_INT(equality, lept_is_equal(&v1, &v2));\
+        v1.lept_free();\
+        v2.lept_free();\
+    } while(0)
+
+static void test_equal() {
+	TEST_EQUAL("true", "true", 1);
+	TEST_EQUAL("true", "false", 0);
+	TEST_EQUAL("false", "false", 1);
+	TEST_EQUAL("null", "null", 1);
+	TEST_EQUAL("null", "0", 0);
+	TEST_EQUAL("123", "123", 1);
+	TEST_EQUAL("123", "456", 0);
+	TEST_EQUAL("\"abc\"", "\"abc\"", 1);
+	TEST_EQUAL("\"abc\"", "\"abcd\"", 0);
+	TEST_EQUAL("[]", "[]", 1);
+	TEST_EQUAL("[]", "null", 0);
+	TEST_EQUAL("[1,2,3]", "[1,2,3]", 1);
+	TEST_EQUAL("[1,2,3]", "[1,2,3,4]", 0);
+	TEST_EQUAL("[[]]", "[[]]", 1);
+	TEST_EQUAL("{}", "{}", 1);
+	TEST_EQUAL("{}", "null", 0);
+	TEST_EQUAL("{}", "[]", 0);
+	TEST_EQUAL("{\"a\":1,\"b\":2}", "{\"a\":1,\"b\":2}", 1);
+	TEST_EQUAL("{\"a\":1,\"b\":2}", "{\"b\":2,\"a\":1}", 1);
+	TEST_EQUAL("{\"a\":1,\"b\":2}", "{\"a\":1,\"b\":3}", 0);
+	TEST_EQUAL("{\"a\":1,\"b\":2}", "{\"a\":1,\"b\":2,\"c\":3}", 0);
+	TEST_EQUAL("{\"a\":{\"b\":{\"c\":{}}}}", "{\"a\":{\"b\":{\"c\":{}}}}", 1);
+	TEST_EQUAL("{\"a\":{\"b\":{\"c\":{}}}}", "{\"a\":{\"b\":{\"c\":[]}}}", 0);
+}
+
+static void test_copy() {
+	lept_value v1, v2;
+	v1.lept_parse("{\"t\":true,\"f\":false,\"n\":null,\"d\":1.5,\"a\":[1,2,3]}");
+	lept_copy(&v2, &v1);
+	EXPECT_TRUE(lept_is_equal(&v2, &v1));
+	v1.lept_free();
+	v2.lept_free();
+}
+
+static void test_move() {
+	lept_value v1, v2, v3;
+	v1.lept_parse("{\"t\":true,\"f\":false,\"n\":null,\"d\":1.5,\"a\":[1,2,3]}");
+	lept_copy(&v2, &v1);
+	lept_move(&v3, &v2);
+	EXPECT_EQ_INT(LEPT_NULL, v2.lept_get_type());
+	EXPECT_TRUE(lept_is_equal(&v3, &v1));
+	printf("1\n");
+	v1.lept_free();
+	v2.lept_free();
+	v3.lept_free();
+}
+
+static void test_swap() {
+	lept_value v1, v2;
+	v1.lept_set_string("Hello", 5);
+	v2.lept_set_string("World!", 6);
+	lept_swap(&v1, &v2);
+	EXPECT_EQ_STRING("World!", v1.lept_get_string(), v1.lept_get_string_length());
+	EXPECT_EQ_STRING("Hello", v2.lept_get_string(), v2.lept_get_string_length());
+	v1.lept_free();
+	v2.lept_free();
+}
+
+void test_access_array() {
+	lept_value a, e;
+	size_t i, j;
+
+	for (j = 0; j <= 5; j += 5) {
+		a.lept_set_array(j);
+		EXPECT_EQ_SIZE_T(0, a.lept_get_array_size());
+		EXPECT_EQ_SIZE_T(j, a.lept_get_array_capacity());
+		for (i = 0; i < 10; i++) {
+			e.set_type(LEPT_NULL);
+			e.lept_set_number(i);
+			lept_move(a.lept_pushback_array_element(), &e);
+			e.lept_free();
+		}
+
+		EXPECT_EQ_SIZE_T(10, a.lept_get_array_size());
+		for (i = 0; i < 10; i++)
+			EXPECT_EQ_DOUBLE((double)i, a.lept_get_array_element(i)->lept_get_number());
+	}
+
+	a.lept_popback_array_element();
+	EXPECT_EQ_SIZE_T(9, a.lept_get_array_size());
+	for (i = 0; i < 9; i++)
+		EXPECT_EQ_DOUBLE((double)i, a.lept_get_array_element(i)->lept_get_number());
+
+	a.lept_erase_array_element(4, 0);
+	EXPECT_EQ_SIZE_T(9, a.lept_get_array_size());
+	for (i = 0; i < 9; i++)
+		EXPECT_EQ_DOUBLE((double)i, a.lept_get_array_element(i)->lept_get_number());
+
+	a.lept_erase_array_element(8, 1);
+	EXPECT_EQ_SIZE_T(8, a.lept_get_array_size());
+	for (i = 0; i < 8; i++)
+		EXPECT_EQ_DOUBLE((double)i, a.lept_get_array_element(i)->lept_get_number());
+
+	a.lept_erase_array_element(0, 2);
+	EXPECT_EQ_SIZE_T(6, a.lept_get_array_size());
+	for (i = 0; i < 6; i++)
+		EXPECT_EQ_DOUBLE((double)i + 2, a.lept_get_array_element(i)->lept_get_number());
+
+#if 1
+	for (i = 0; i < 2; i++) {
+		e.set_type(LEPT_NULL);
+		e.lept_set_number(i);
+		lept_move(a.lept_insert_array_element(i), &e);
+		e.lept_free();
+	}
+#endif
+
+	EXPECT_EQ_SIZE_T(8, a.lept_get_array_size());
+	for (i = 0; i < 8; i++)
+		EXPECT_EQ_DOUBLE((double)i, a.lept_get_array_element(i)->lept_get_number());
+
+	EXPECT_TRUE(a.lept_get_array_capacity() > 8);
+	a.lept_shrink_array();
+	EXPECT_EQ_SIZE_T(8, a.lept_get_array_capacity());
+	EXPECT_EQ_SIZE_T(8, a.lept_get_array_size());
+	for (i = 0; i < 8; i++)
+		EXPECT_EQ_DOUBLE((double)i, a.lept_get_array_element(i)->lept_get_number());
+
+	e.lept_set_string("Hello", 5);
+	lept_move(a.lept_pushback_array_element(), &e);     /* Test if element is freed */
+	e.lept_free();
+
+	i = a.lept_get_array_capacity();
+	a.lept_clear_array();
+	EXPECT_EQ_SIZE_T(0, a.lept_get_array_size());
+	EXPECT_EQ_SIZE_T(i, a.lept_get_array_capacity());   /* capacity remains unchanged */
+	a.lept_shrink_array();
+	EXPECT_EQ_SIZE_T(0, a.lept_get_array_capacity());
+
+	a.lept_free();
+}
+
+static void test_parse() {
+	test_parse_null();
+	test_parse_true();
+	test_parse_false();
+	test_parse_number();
+	test_parse_string();
+	test_parse_array();
+	test_parse_object();
+
+	test_parse_expect_value();
+	test_parse_invalid_value();
+	test_parse_root_not_singular();
+	test_parse_number_too_big();
+	test_parse_missing_quotation_mark();
+	test_parse_invalid_string_escape();
+	test_parse_invalid_string_char();
+	test_parse_invalid_unicode_hex();
+	test_parse_invalid_unicode_surrogate();
+	test_parse_miss_comma_or_square_bracket();
+	test_parse_miss_key();
+	test_parse_miss_colon();
+	test_parse_miss_comma_or_curly_bracket();
+
+	test_access_null();
+	test_access_boolean();
+	test_access_number();
+	test_access_string();
+	test_access_array();
+
+	test_stringify();
+	test_equal();
+	test_copy();
+	test_move();
+	test_swap();
+
+	const char* json = "{\"a\":[1,2],\"b\":3}";
+	char *out;
+	lept_value v;
+	v.lept_parse(json);
+	lept_copy(
+		v.lept_find_object_value("b", 1),
+		v.lept_find_object_value("a", 1));
+	printf("%s\n", out = v.lept_stringify(nullptr)); /* {"a":[1,2],"b":[1,2]} */
+	delete[] out;
+
+	v.lept_parse(json);
+	lept_move(
+		v.lept_find_object_value("b", 1),
+		v.lept_find_object_value("a", 1));
+	printf("%s\n", out = v.lept_stringify(nullptr)); /* {"a":null,"b":[1,2]} */
+	delete[] out;
+
+	v.lept_parse(json);
+	lept_swap(
+		v.lept_find_object_value("b", 1),
+		v.lept_find_object_value("a", 1));
+	printf("%s\n", out = v.lept_stringify(nullptr)); /* {"a":3,"b":[1,2]} */
+	delete[] out;
+
+	v.lept_free();
 }
 
 int main(void) {
@@ -477,7 +663,7 @@ int main(void) {
 #endif
 
 	test_parse();
-	test_stringify();
+
 	printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
 
 	std::cout << sizeof(lept_value) << std::endl;

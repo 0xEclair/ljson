@@ -60,24 +60,37 @@ class leptjson::lept_value {
 			char* s_;		//8
 			size_t len_;	//4->8
 		};
+			/* array */
 		struct {
 			lept_value* e_;
-			size_t size_;
+			size_t size_, capacity_;
 		};
+			/* member */
 		struct {
 			lept_member* m_;
-			size_t size_;
+			size_t size_, capacity_;
 		};
 		double n_;			//8
 	};
 	lept_type type_{ LEPT_NULL };		//4->8
 
 public:
-	lept_value*& lept_get_e() {
+ 	lept_value*& lept_set_e() {
+		assert(type_ == LEPT_ARRAY);
 		return e_;
 	}
 
-	lept_member*& lept_get_m() {
+	lept_value* lept_get_e()const {
+		assert(type_ == LEPT_ARRAY);
+		return e_;
+	}
+
+	lept_member*& lept_set_m() {
+		assert(type_ == LEPT_OBJECT);
+		return m_;
+	}
+	lept_member* lept_get_m()const {
+		assert(type_ == LEPT_OBJECT);
 		return m_;
 	}
 	//=====================================
@@ -95,8 +108,11 @@ public:
 	void lept_set_boolean(int b);
 
 	double lept_get_number() const;
-	template <class T>
-	void lept_set_number(T&& n);
+	void lept_set_number(double n) {
+			lept_free();
+			n_ = n;
+			type_ = LEPT_NUMBER;
+	}
 
 	const char* lept_get_string() const {
 		assert(this != nullptr && type_ == LEPT_STRING);
@@ -110,7 +126,7 @@ public:
 	//=====================================
 	//=====================================
 	//tutorial05
-	lept_value* lept_get_array_element(size_t index);
+	lept_value* lept_get_array_element(size_t index) const;
 
 
 	size_t lept_get_array_size() const{
@@ -121,18 +137,44 @@ public:
 	//=====================================
 	//=====================================
 	//tutorial06
-	size_t lept_get_object_size() {
+	size_t lept_get_object_size() const {
 		return size_;
 	}
-	const char* lept_get_object_key( size_t index);
-	size_t lept_get_object_key_length(size_t index);
-	lept_value* lept_get_object_value(size_t index);
+	const char* lept_get_object_key( size_t index)const;
+	char*& lept_set_object_key(size_t index);
+
+	size_t& lept_get_object_key_length(size_t index);
+	size_t lept_get_object_key_length(size_t index)const;
+	lept_value* lept_get_object_value(size_t index)const;
 
 	//=====================================
 	//=====================================
 	//tutorial07
 	char* lept_stringify(size_t* length);
 
+	//=====================================
+	//=====================================
+	//tutorial08
+	size_t lept_find_object_index(const char* _key, size_t _klen) const;
+	lept_value* lept_find_object_value(const char* _key, size_t _klen) const;
+
+	void lept_set_object_value(const char* _key, size_t _klen, const lept_value* value);
+
+	void lept_set_array(size_t _capacity);
+	size_t lept_get_array_capacity()const {
+		assert(this != nullptr && type_ == LEPT_ARRAY);
+		return capacity_;
+	}
+	void lept_reserve_array(size_t _capacity);
+	void lept_shrink_array();
+	lept_value* lept_pushback_array_element();
+	void lept_popback_array_element() {
+		assert(this != nullptr && type_ == LEPT_ARRAY &&size_ > 0);
+		e_[--size_].lept_free();
+	}
+	lept_value* lept_insert_array_element(size_t index);
+	void lept_erase_array_element(size_t index, size_t count);
+	void lept_clear_array();
 	//=====================================
 	//=====================================
 	// 修改/获得private变量接口
@@ -207,4 +249,12 @@ namespace {
 	//tutorial07
 	void lept_stringify_value(lept_context* c, const lept_value* v);
 	void lept_stringify_string(lept_context* c, const char* s, size_t len);
+
 }
+
+//tutorial08
+int lept_is_equal(const lept_value* _lhs, const lept_value* _rhs);
+
+void lept_copy(lept_value* _dst, lept_value* _src);
+void lept_move(lept_value* _dst, lept_value* _src);
+void lept_swap(lept_value* _lhs, lept_value* _rhs);
