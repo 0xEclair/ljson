@@ -491,7 +491,7 @@ void* lept_context::lept_context_push(size_t size) {
 		auto tmp = stack_;
 		stack_ = new char[size_];
 		if (tmp != nullptr) {
-			memcpy(stack_, tmp, sizeof(tmp));
+			memcpy(stack_, tmp, top_);
 			delete[] tmp;
 		}
 	}
