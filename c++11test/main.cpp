@@ -65,20 +65,33 @@ void fun(A* tmp) {
 		tmp->c = new char('c');
 }
 
-int main(void) {
-	A t;
-	fun(&t);
-	//std::cout << t.c<<std::endl;
-	delete t.c;
 
-	a b;
-	b.m = new int(1321);
-	b.size_ = 0x05050505;
-	std::cout << &b << std::endl;
-	std::cout << sizeof(b) << std::endl;
-	std::cout << &*b.m << std::endl;
-	std::cout << b.size_ << std::endl;
-	delete b.m;
+void potest(int* t1,int* t2) {
+	t1 = std::move(t2);
+	std::cout << "t1 " << *t1 << std::endl << "t2 " << *t2 << std::endl;
+}
+
+int main(void) {
+	//A t;
+	//fun(&t);
+	////std::cout << t.c<<std::endl;
+	//delete t.c;
+
+	//a b;
+	//b.m = new int(1321);
+	//b.size_ = 0x05050505;
+	//std::cout << &b << std::endl;
+	//std::cout << sizeof(b) << std::endl;
+	//std::cout << &*b.m << std::endl;
+	//std::cout << b.size_ << std::endl;
+	//delete b.m;
+
+	std::cout << std::endl;
+	int a = 5,b=6;
+	int* x = &a,*y=&b;
+	potest(x, y);
+	std::cout << "x " << *x << std::endl << "y " << *y << std::endl;
+
 
 
 	_CrtDumpMemoryLeaks();

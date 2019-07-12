@@ -491,7 +491,7 @@ void* lept_context::lept_context_push(size_t size) {
 		auto tmp = stack_;
 		stack_ = new char[size_];
 		if (tmp != nullptr) {
-			memcpy(stack_, tmp, sizeof(tmp));
+			memcpy(stack_, tmp, top_);
 			delete[] tmp;
 		}
 	}
@@ -738,6 +738,7 @@ void lept_value::lept_erase_array_element(size_t index, size_t count) {
 	for (size_t i = 0; i < count; ++i) {
 		e_[index + i].lept_free();
 	}
+
 	memcpy(&e_[index], &e_[index + count], (size_-index-count)*sizeof(lept_value));
 	size_ -= count;
 }
@@ -825,7 +826,9 @@ void lept_value::lept_remove_object_value(size_t index){
 	delete[] m_[index].k;
 	m_[index].klen = 0;
 	m_[index].v.lept_free();
-	memcpy(&m_[index], &m_[index + 1], (--size_-index)*sizeof(lept_member));
+	if (index == --size_)
+		return;
+	memcpy(&m_[index], &m_[index + 1], (size_-index)*sizeof(lept_member));
 	m_[size_].k = nullptr;
 	m_[size_].klen = 0;
 	m_[size_].v.set_type(LEPT_NULL);

@@ -565,7 +565,7 @@ void test_access_array() {
 		e.set_type(LEPT_NULL);
 		e.lept_set_number(i);
 		lept_move(a.lept_insert_array_element(i), &e);
-		e.lept_free();
+		//e.lept_free();
 	}
 
 	EXPECT_EQ_SIZE_T(8, a.lept_get_array_size());
