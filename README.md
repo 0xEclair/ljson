@@ -1,5 +1,5 @@
 # ljson
-learn lepton json project
+learn lepton json project（已经放弃使用c++11重构）
 ## tutorial07
 ### 关于json的字符串生成的补充
 https://docs.microsoft.com/zh-cn/sql/relational-databases/json/how-for-json-escapes-special-characters-and-control-characters-sql-server?view=sql-server-2017
