@@ -199,3 +199,17 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 *.json
+
+*.sdf
+*.suo
+*.opensdf
+**/.vs/**
+**/Debug/**
+**/Release/**
+*.test.txt
+~$*.docx
+~*.tmp
+*.o
+**/Obj/**
+**/Bin/**
+*~
