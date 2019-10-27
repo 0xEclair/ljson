@@ -3,11 +3,11 @@
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
+#include "ljson.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include "ljson.h"
 #include <iostream>
 using namespace ljson;
 static int main_ret = 0;
