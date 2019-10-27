@@ -9,7 +9,7 @@
 #include <string>
 #include "ljson.h"
 #include <iostream>
-using namespace leptjson;
+using namespace ljson;
 static int main_ret = 0;
 static int test_count = 0;
 static int test_pass = 0;

@@ -1,4 +1,4 @@
-/*		leptjson.cpp		*/
+/*		ljson.cpp		*/
 #include "ljson.h"
 #ifdef _WINDOWS
 #define _CRTDBG_MAP_ALLOC
@@ -562,7 +562,7 @@ lept_type lept_value::lept_get_type() const{
 
 //==========================================================================================================
 //tutorial02
-double leptjson::lept_value::lept_get_number() const{
+double ljson::lept_value::lept_get_number() const{
 	assert(this != nullptr && type_ == LEPT_NUMBER);
 	return n_;
 }

@@ -1,20 +1,17 @@
 #pragma once
-/*		leptjson.hpp		*/
-//==========================================================================================================
-//tutorial01
+/*		ljson.h		*/
+/*     "l" is lept   */
 #include <assert.h>	/* assert() */
 #include <stdlib.h>	/* nullptr strtod() */
-//tutorial02
 #include <errno.h>   /* errno, ERANGE */
 #include <math.h>    /* HUGE_VAL */
-//tutorial03
 #include <string>	/*   memcpy()     */
 #define lept_set_null lept_free
 
 /* c++中size_t是 unsigned long long  */	
 #define size_t unsigned int
 
-namespace leptjson {
+namespace ljson {
 	enum lept_type {
 		LEPT_NULL,
 		LEPT_FALSE,
@@ -51,7 +48,7 @@ namespace leptjson {
 //==============================
 //=== class
 //=== lept_value 
-class leptjson::lept_value {
+class ljson::lept_value {
 	//8bit对齐
 	union {	// --------------12->16
 		struct
@@ -201,7 +198,7 @@ public:
 //==============================
 //=== class
 //=== lept_context 
-class leptjson::lept_context {
+class ljson::lept_context {
 public:
 	const char* json_;		//8
 	// 动态堆栈
@@ -226,7 +223,7 @@ public:
 //==============================
 //=== class
 //=== lept_member 
-class leptjson::lept_member {
+class ljson::lept_member {
 public:
 	char* k;				/* member key string */
 	size_t klen;			/* key string length */
@@ -234,7 +231,7 @@ public:
 };
 
 namespace {
-	using namespace leptjson;
+	using namespace ljson;
 
 	int lept_parse_literal(lept_context* c, lept_value* v, const char* literal, lept_type&& type);
 	int lept_parse_number(lept_context* c, lept_value* v);
