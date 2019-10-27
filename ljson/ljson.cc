@@ -24,11 +24,11 @@
 		type_=LEPT_NULL;\
 	}while(0)
 
-#ifndef LEPT_PARSE_STACK_INIT_SIZE
-#define LEPT_PARSE_STACK_INTI_SIZE 512
+#ifndef PARSE_STACK_INIT_SIZE
+#define PARSE_STACK_INTI_SIZE 512
 #endif
 
-constexpr size_t LEPT_PARSE_STRINGIFY_INIT_SIZE = 256;
+constexpr size_t PARSE_STRINGIFY_INIT_SIZE = 256;
 
 #define PUTC(c,ch) \
 	do{\
@@ -124,67 +124,6 @@ namespace {
 		return PARSE_OK;
 
 	}
-
-
-/*
-	int ParseString(context* c, value* v) {
-		size_t head = c->top_, len;
-		const char* p;
-		unsigned u, u2;
-		EXPECT(c, '\"');
-		p = c->json_;
-		for (;;) {
-			char ch = *p++;
-			switch (ch) {
-			case '\"':
-				len = c->top_ - head;
-				v->set_string((const char*)c->pop(len), len);
-				c->json_ = p;
-				return PARSE_OK;
-			case '\0':
-				STRING_ERROR(PARSE_MISS_QUOTATION_MARK);
-			case '\\':
-				switch (*p++) {
-				case '\"':PUTC(c, '\"'); break;
-				case '\\':PUTC(c, '\\'); break;
-				case '/':PUTC(c, '/'); break;
-				case 'b':PUTC(c, '\b'); break;
-				case 'f':PUTC(c, '\f'); break;
-				case 'n':PUTC(c, '\n'); break;
-				case 'r':PUTC(c, '\r'); break;
-				case 't':PUTC(c, '\t'); break;
-				case 'u':
-					if (!(p = ParseHex4(p, u))) {
-						STRING_ERROR(PARSE_INVALID_UNICODE_HEX);
-					}
-					if (u >= 0xD800 && u <= 0xDBFF) {
-						if (*p++ != '\\')
-							STRING_ERROR(PARSE_INVALID_UNICODE_SURROGATE);
-						if (*p++ != 'u')
-							STRING_ERROR(PARSE_INVALID_UNICODE_SURROGATE);
-						if (!(p = ParseHex4(p, u2))) {
-							STRING_ERROR(PARSE_INVALID_UNICODE_HEX);
-						}
-						if (u2 < 0xDC00 || u2>0xDFFF)
-							STRING_ERROR(PARSE_INVALID_UNICODE_SURROGATE);
-						u = (((u - 0xD800) << 10) | (u2 - 0xDC00)) + 0x10000;
-					}
-					//++++ TODO surrogate handling ++++//
-					c->EncodeUtf8(u);
-					break;
-				default:
-					STRING_ERROR(PARSE_INVALID_STRING_ESCAPE);
-				}
-				break;
-			default:
-				if ((unsigned char)ch < 0x20) {
-					STRING_ERROR(PARSE_INVALID_STRING_CHAR);
-				}
-				PUTC(c, ch);
-			}
-		}
-	}
-*/
 
 	//解析value
 	int ParseValue(context* c, value* v) {
@@ -477,7 +416,7 @@ void* context::push(size_t size) {
 
 	if (top_ + size >= size_) {
 		if (size_ == 0) {
-			size_ = LEPT_PARSE_STACK_INTI_SIZE;
+			size_ = PARSE_STACK_INTI_SIZE;
 		}
 		while (top_ + size >= size_) {
 			size_ += size_ >> 1;	/* size_ * 1.5 */
@@ -653,7 +592,7 @@ value* value::get_object_value(size_t index) const{
 char* value::stringify(size_t* length) {
 	context c;
 	assert(this != nullptr);
-	c.stack_ = new char[LEPT_PARSE_STRINGIFY_INIT_SIZE];
+	c.stack_ = new char[PARSE_STRINGIFY_INIT_SIZE];
 	c.top_ = 0;
 	stringify_value(&c, this);
 	if (length)*length = c.top_;
